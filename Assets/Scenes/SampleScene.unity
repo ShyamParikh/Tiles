@@ -147,7 +147,8 @@ Transform:
   m_LocalPosition: {x: -0, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1046299508}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
@@ -211,7 +212,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -679,12 +680,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1046299505}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 67596357}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1271533675
 GameObject:
@@ -696,6 +697,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1271533676}
   - component: {fileID: 1271533677}
+  - component: {fileID: 1271533678}
   m_Layer: 0
   m_Name: GridContainer
   m_TagString: Untagged
@@ -737,49 +739,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoardSpawner
   tilePrefab: {fileID: 5272255644890200733, guid: 7eb34728288256b4bb48dfb44cd7c104, type: 3}
   boardRoot: {fileID: 1271533676}
-  source: 3
-  generateOnStart: 1
-  patternSettings:
-    pattern: 0
-    width: 8
-    height: 8
-    layers: 4
-  levelAssets:
-  - {fileID: 11400000, guid: b6b6842893a5a0c45b9c91a312c47890, type: 2}
-  levelIndex: 0
-  trimLevelAssets: 0
-  randomSettings:
-    seed: 0
-    minColumns: 8
-    maxColumns: 14
-    minRows: 6
-    maxRows: 9
-    minLayers: 2
-    maxLayers: 5
-    baseFillChance: 0.8
-    upperLayerChance: 0.65
-    mirrorHorizontally: 1
-    mirrorVertically: 1
-    minTiles: 40
-  stackSettings:
-    style: 0
-    supportRule: 2
-  maxTileCount: 0
-  forceEvenTileCount: 1
-  plane: 0
-  autoSize: 1
-  tileSize: {x: 1, y: 1}
-  manualLayerThickness: 0.3
-  gap: {x: 0, y: 0}
-  layerGap: 0
-  layerShift: {x: 0, y: 0}
-  invertLayerDirection: 0
+  levelAsset: {fileID: 11400000, guid: c7a45ebe2525d4d51933ae23297b6128, type: 2}
+  boardPlane: 1
+  tileRotation: {x: 180, y: 0, z: 180}
+  invertStackingDirection: 0
+  layerThickness: 0
+  distanceBetweenLayers: -55
+  sizingMode: 0
+  manualTileSize: {x: 1, y: 1}
+  manualGap: {x: 100, y: 100}
+  totalAreaDimensions: {x: 800, y: 800}
+  targetBoundsBox: {fileID: 0}
   centerBoard: 1
-  tilePositionOffset: {x: 0, y: 0, z: 0}
-  tileRotation: {x: 180, y: 0, z: 0}
-  overrideScale: 0
-  tileScale: {x: 1, y: 1, z: 1}
-  logInfo: 1
+--- !u!114 &1271533678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1271533675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cb8f07a6587844a2b2340cc434d3442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MahjongSpawner
 --- !u!1 &1280660872
 GameObject:
   m_ObjectHideFlags: 0
@@ -1030,4 +1013,3 @@ SceneRoots:
   - {fileID: 551699016}
   - {fileID: 1280660873}
   - {fileID: 67596357}
-  - {fileID: 1046299508}

@@ -1,96 +1,50 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// A hand-made level stored as an asset (Create > Mahjong > Level Data).
-/// Each element of "Layers" is one layer, index 0 = bottom layer.
-/// Inside a layer, write one line per row, TOP row first.
-/// 'X' (or 'x' or '#') = a tile, any other character = empty.
-///
-/// Half Step Grid ON (default): every character is HALF a tile.
-/// 'X' marks the top-left corner of a tile. The tile covers that character, the one to its right,
-/// and the two below them. Tiles side by side are written "X.X.X.", and moving an X one
-/// character moves that tile half a tile.
-///
-/// Half Step Grid OFF: old format, every character is one whole tile and the Stack Style
-/// offset of the spawner is applied to odd layers.
-/// </summary>
-[CreateAssetMenu(fileName = "MahjongLevel", menuName = "Mahjong/Level Data")]
-public class MahjongLevelData : ScriptableObject
+// This is just a raw C# class, safely tucked in this file to avoid Native Class errors.
+[System.Serializable]
+public class MahjongLayer
 {
-    [Tooltip("ON: every character is HALF a tile ('X' = top-left of a tile). OFF: every character is one whole tile.")]
-    [SerializeField] private bool halfStepGrid = true;
+    public int width = 10;
+    public int height = 10;
+    
+    // Offset for staggering layers to create the 3D interlocking effect
+    public Vector2 offset = Vector2.zero; 
+    
+    [HideInInspector]
+    public bool[] grid;
 
-    [SerializeField, TextArea(5, 16)] private string[] layers;
-
-    public int LayerCount
+    public MahjongLayer(int w, int h)
     {
-        get
-        {
-            if (layers == null)
-            {
-                return 0;
-            }
-            return layers.Length;
-        }
+        width = w;
+        height = h;
+        grid = new bool[w * h];
     }
 
-    // Converts the text into grid positions: x, y = half-tile units (y up), z = layer.
-    public List<Vector3Int> ToPositions(MahjongStackSettings stack)
+    public bool GetCell(int x, int y)
     {
-        List<Vector3Int> result = new List<Vector3Int>();
-        if (layers == null)
-        {
-            return result;
-        }
+        if (x < 0 || x >= width || y < 0 || y >= height) return false;
+        return grid[y * width + x];
+    }
 
-        // Half-step mode aligns every layer to the tallest one, so layers line up on top of each other.
-        int tallestLayerRows = 0;
-        for (int z = 0; z < layers.Length; z++)
-        {
-            if (string.IsNullOrEmpty(layers[z]))
-            {
-                continue;
-            }
-            int lineCount = layers[z].Replace("\r", "").Split('\n').Length;
-            tallestLayerRows = Mathf.Max(tallestLayerRows, lineCount);
-        }
+    public void SetCell(int x, int y, bool value)
+    {
+        if (x < 0 || x >= width || y < 0 || y >= height) return;
+        grid[y * width + x] = value;
+    }
+}
 
-        for (int z = 0; z < layers.Length; z++)
-        {
-            if (string.IsNullOrEmpty(layers[z]))
-            {
-                continue;
-            }
+// The actual ScriptableObject you will create in your project window.
+[CreateAssetMenu(fileName = "NewVisualLevel", menuName = "Mahjong/Visual Level Data")]
+public class MahjongLevelData : ScriptableObject
+{
+    public int defaultWidth = 10;
+    public int defaultHeight = 10;
+    
+    public List<MahjongLayer> layers = new List<MahjongLayer>();
 
-            string[] lines = layers[z].Replace("\r", "").Split('\n');
-            Vector2Int offset = stack.GetLayerOffset(z);
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string line = lines[i];
-
-                for (int x = 0; x < line.Length; x++)
-                {
-                    char c = line[x];
-                    if (c != 'X' && c != 'x' && c != '#')
-                    {
-                        continue;
-                    }
-
-                    if (halfStepGrid)
-                    {
-                        // First line of text = top row. Same constant shift for every layer.
-                        result.Add(new Vector3Int(x, tallestLayerRows - 1 - i, z));
-                    }
-                    else
-                    {
-                        int row = lines.Length - 1 - i;
-                        result.Add(new Vector3Int(x * 2 + offset.x, row * 2 + offset.y, z));
-                    }
-                }
-            }
-        }
-        return result;
+    public void AddLayer()
+    {
+        layers.Add(new MahjongLayer(defaultWidth, defaultHeight));
     }
 }
