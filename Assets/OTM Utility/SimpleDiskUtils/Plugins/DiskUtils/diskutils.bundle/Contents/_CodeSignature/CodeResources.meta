@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f842470912d1c4049901cffbe1f618aa
+timeCreated: 1465549853
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 59382
+  packageName: Simple Disk Utils
+  packageVersion: 1.1
+  assetPath: Assets/SimpleDiskUtils/Plugins/DiskUtils/diskutils.bundle/Contents/_CodeSignature/CodeResources
+  uploadId: 143942

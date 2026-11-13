@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7cf3ca26bda78415896c2ad3f3e27679
+timeCreated: 1465549853
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 59382
+  packageName: Simple Disk Utils
+  packageVersion: 1.1
+  assetPath: Assets/SimpleDiskUtils/Plugins/DiskUtils/diskutils.bundle/Contents/MacOS/diskutils
+  uploadId: 143942

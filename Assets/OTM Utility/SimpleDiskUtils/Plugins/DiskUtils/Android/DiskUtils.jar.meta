@@ -1,0 +1,39 @@
+fileFormatVersion: 2
+guid: e46514604621a48b4a0f22b39f0c8690
+AssetOrigin:
+  serializedVersion: 1
+  productId: 59382
+  packageName: Simple Disk Utils
+  packageVersion: 1.1
+  assetPath: Assets/SimpleDiskUtils/Plugins/DiskUtils/Android/DiskUtils.jar
+  uploadId: 143942
+PluginImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  defineConstraints: []
+  isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
+  platformData:
+  - first:
+      Android: Android
+    second:
+      enabled: 1
+      settings: {}
+  - first:
+      Any: 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
+      enabled: 0
+      settings:
+        DefaultValueInitialized: true
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

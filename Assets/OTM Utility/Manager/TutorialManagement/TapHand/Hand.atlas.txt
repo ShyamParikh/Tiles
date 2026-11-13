@@ -1,0 +1,11 @@
+Hand.png
+size:512,280
+filter:Linear,Linear
+pma:true
+Glow
+bounds:2,2,275,275
+offsets:6,7,288,288
+Hand
+bounds:279,21,256,230
+offsets:0,13,256,256
+rotate:90

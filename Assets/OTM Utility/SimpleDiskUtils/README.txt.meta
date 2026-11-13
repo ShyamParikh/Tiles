@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2a9b5df2151f944289e310a01a5bae62
+timeCreated: 1459383997
+licenseType: Store
+TextScriptImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 59382
+  packageName: Simple Disk Utils
+  packageVersion: 1.1
+  assetPath: Assets/SimpleDiskUtils/README.txt
+  uploadId: 143942

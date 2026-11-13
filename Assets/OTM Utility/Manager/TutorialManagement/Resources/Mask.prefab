@@ -1,0 +1,909 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5781071558802293127
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6187309832455315361}
+  - component: {fileID: 5013015804827022364}
+  - component: {fileID: 4948233021031010900}
+  m_Layer: 9
+  m_Name: Inner-Image
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &6187309832455315361
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5781071558802293127}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6485146569458079520}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &5013015804827022364
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5781071558802293127}
+  m_CullTransparentMesh: 1
+--- !u!114 &4948233021031010900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5781071558802293127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 12bf6525d7e672941926f9862e9c3090, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!1 &7882137896428996701
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6485146569458079520}
+  - component: {fileID: 1056442492871201841}
+  - component: {fileID: 4475484223449792644}
+  - component: {fileID: 3431662355558889893}
+  - component: {fileID: 5945191920564316537}
+  - component: {fileID: 8336065737804415486}
+  m_Layer: 9
+  m_Name: Mask
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &6485146569458079520
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7882137896428996701}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6187309832455315361}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 15.4, y: 19.2}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1056442492871201841
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7882137896428996701}
+  m_CullTransparentMesh: 1
+--- !u!114 &4475484223449792644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7882137896428996701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: 1e9e4c08f325d664cad7a94a18edfc20, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 7704c0faed78a7d449c1a62515975cee, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!223 &3431662355558889893
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7882137896428996701}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 1
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 641678553
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
+--- !u!114 &5945191920564316537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7882137896428996701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8864a1517545c84b81983e7a8214133, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 21300000, guid: a3b2d9b277c5ae64aa8364e94c7f7ba0, type: 3}
+    - {fileID: 21300000, guid: 60b03f8bec7113d47b9cd1d099436282, type: 3}
+    - {fileID: 1047177693801419529, guid: 2a17e4e59b882c0429548f1588898f9e, type: 3}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: masks
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[com.otm.tutorial.TutorialUIMaskType,
+        Assembly-CSharp],[com.otm.tutorial.TutorialUIMask+MaskSpriteConfig, Assembly-CSharp]],
+        mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[com.otm.tutorial.TutorialUIMaskType,
+        Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 3
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 0
+    - Name: $v
+      Entry: 7
+      Data: com.otm.tutorial.TutorialUIMask+MaskSpriteConfig, Assembly-CSharp
+    - Name: maskSprite
+      Entry: 10
+      Data: 0
+    - Name: innerMaskSprite
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 1
+    - Name: $v
+      Entry: 7
+      Data: com.otm.tutorial.TutorialUIMask+MaskSpriteConfig, Assembly-CSharp
+    - Name: maskSprite
+      Entry: 10
+      Data: 0
+    - Name: innerMaskSprite
+      Entry: 10
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 2
+    - Name: $v
+      Entry: 7
+      Data: com.otm.tutorial.TutorialUIMask+MaskSpriteConfig, Assembly-CSharp
+    - Name: maskSprite
+      Entry: 10
+      Data: 0
+    - Name: innerMaskSprite
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  rectTransform: {fileID: 6485146569458079520}
+  maskImage: {fileID: 4475484223449792644}
+  maskInnerImage: {fileID: 4948233021031010900}
+  animationGroupComponent: {fileID: 8336065737804415486}
+--- !u!114 &8336065737804415486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7882137896428996701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 127a2b565039b8644b5fe825994325a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 6485146569458079520}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: otherAnimation
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[com.otm.animation.AnimationGroup,
+        Assembly-CSharp]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.GenericEqualityComparer`1[[System.String,
+        mscorlib]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 2
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: Show
+    - Name: $v
+      Entry: 7
+      Data: 2|com.otm.animation.AnimationGroup, Assembly-CSharp
+    - Name: waitForEnable
+      Entry: 5
+      Data: false
+    - Name: playInSequence
+      Entry: 5
+      Data: false
+    - Name: useScaleTime
+      Entry: 5
+      Data: true
+    - Name: animations
+      Entry: 7
+      Data: 3|com.otm.animation.BaseAnimation[], Assembly-CSharp
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 7
+      Data: 4|com.otm.animation.ScaleAnimation, Assembly-CSharp
+    - Name: duration
+      Entry: 4
+      Data: 0.21
+    - Name: loop
+      Entry: 5
+      Data: false
+    - Name: startDelay
+      Entry: 7
+      Data: UnityEngine.Vector2, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: overDelay
+      Entry: 7
+      Data: UnityEngine.Vector2, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: curve
+      Entry: 7
+      Data: 5|UnityEngine.AnimationCurve, UnityEngine.CoreModule
+    - Name: 
+      Entry: 7
+      Data: 6|UnityEngine.Keyframe[], UnityEngine.CoreModule
+    - Name: 
+      Entry: 12
+      Data: 2
+    - Name: 
+      Entry: 7
+      Data: UnityEngine.Keyframe, UnityEngine.CoreModule
+    - Name: ver
+      Entry: 3
+      Data: 1
+    - Name: m_Time
+      Entry: 4
+      Data: 0
+    - Name: m_Value
+      Entry: 4
+      Data: 0
+    - Name: m_InTangent
+      Entry: 4
+      Data: 0
+    - Name: m_OutTangent
+      Entry: 4
+      Data: 0
+    - Name: m_TangentMode
+      Entry: 3
+      Data: 0
+    - Name: m_WeightedMode
+      Entry: 3
+      Data: 0
+    - Name: m_InWeight
+      Entry: 4
+      Data: 0
+    - Name: m_OutWeight
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: UnityEngine.Keyframe, UnityEngine.CoreModule
+    - Name: ver
+      Entry: 3
+      Data: 1
+    - Name: m_Time
+      Entry: 4
+      Data: 1
+    - Name: m_Value
+      Entry: 4
+      Data: 1
+    - Name: m_InTangent
+      Entry: 4
+      Data: 0
+    - Name: m_OutTangent
+      Entry: 4
+      Data: 0
+    - Name: m_TangentMode
+      Entry: 3
+      Data: 0
+    - Name: m_WeightedMode
+      Entry: 3
+      Data: 0
+    - Name: m_InWeight
+      Entry: 4
+      Data: 0
+    - Name: m_OutWeight
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 3
+      Data: 8
+    - Name: 
+      Entry: 3
+      Data: 8
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: transform
+      Entry: 10
+      Data: 0
+    - Name: useCurrentValue
+      Entry: 5
+      Data: false
+    - Name: startScale
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: endScale
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: resetOnStart
+      Entry: 5
+      Data: false
+    - Name: resetOnStop
+      Entry: 5
+      Data: false
+    - Name: resetOnOver
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: useAnimationEvent
+      Entry: 5
+      Data: false
+    - Name: onInit
+      Entry: 7
+      Data: 7|UnityEngine.Events.UnityEvent, UnityEngine.CoreModule
+    - Name: m_PersistentCalls
+      Entry: 7
+      Data: 8|UnityEngine.Events.PersistentCallGroup, UnityEngine.CoreModule
+    - Name: m_Calls
+      Entry: 7
+      Data: 9|System.Collections.Generic.List`1[[UnityEngine.Events.PersistentCall,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: onStart
+      Entry: 7
+      Data: 10|UnityEngine.Events.UnityEvent, UnityEngine.CoreModule
+    - Name: m_PersistentCalls
+      Entry: 7
+      Data: 11|UnityEngine.Events.PersistentCallGroup, UnityEngine.CoreModule
+    - Name: m_Calls
+      Entry: 7
+      Data: 12|System.Collections.Generic.List`1[[UnityEngine.Events.PersistentCall,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: onComplete
+      Entry: 7
+      Data: 13|UnityEngine.Events.UnityEvent, UnityEngine.CoreModule
+    - Name: m_PersistentCalls
+      Entry: 7
+      Data: 14|UnityEngine.Events.PersistentCallGroup, UnityEngine.CoreModule
+    - Name: m_Calls
+      Entry: 7
+      Data: 15|System.Collections.Generic.List`1[[UnityEngine.Events.PersistentCall,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: Hide
+    - Name: $v
+      Entry: 7
+      Data: 16|com.otm.animation.AnimationGroup, Assembly-CSharp
+    - Name: waitForEnable
+      Entry: 5
+      Data: false
+    - Name: playInSequence
+      Entry: 5
+      Data: false
+    - Name: useScaleTime
+      Entry: 5
+      Data: true
+    - Name: animations
+      Entry: 7
+      Data: 17|com.otm.animation.BaseAnimation[], Assembly-CSharp
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 7
+      Data: 18|com.otm.animation.ScaleAnimation, Assembly-CSharp
+    - Name: duration
+      Entry: 4
+      Data: 0.19
+    - Name: loop
+      Entry: 5
+      Data: false
+    - Name: startDelay
+      Entry: 7
+      Data: UnityEngine.Vector2, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: overDelay
+      Entry: 7
+      Data: UnityEngine.Vector2, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: curve
+      Entry: 7
+      Data: 19|UnityEngine.AnimationCurve, UnityEngine.CoreModule
+    - Name: 
+      Entry: 7
+      Data: 20|UnityEngine.Keyframe[], UnityEngine.CoreModule
+    - Name: 
+      Entry: 12
+      Data: 2
+    - Name: 
+      Entry: 7
+      Data: UnityEngine.Keyframe, UnityEngine.CoreModule
+    - Name: ver
+      Entry: 3
+      Data: 1
+    - Name: m_Time
+      Entry: 4
+      Data: 0
+    - Name: m_Value
+      Entry: 4
+      Data: 0
+    - Name: m_InTangent
+      Entry: 4
+      Data: 0
+    - Name: m_OutTangent
+      Entry: 4
+      Data: 0
+    - Name: m_TangentMode
+      Entry: 3
+      Data: 0
+    - Name: m_WeightedMode
+      Entry: 3
+      Data: 0
+    - Name: m_InWeight
+      Entry: 4
+      Data: 0
+    - Name: m_OutWeight
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: UnityEngine.Keyframe, UnityEngine.CoreModule
+    - Name: ver
+      Entry: 3
+      Data: 1
+    - Name: m_Time
+      Entry: 4
+      Data: 1
+    - Name: m_Value
+      Entry: 4
+      Data: 1
+    - Name: m_InTangent
+      Entry: 4
+      Data: 0
+    - Name: m_OutTangent
+      Entry: 4
+      Data: 0
+    - Name: m_TangentMode
+      Entry: 3
+      Data: 0
+    - Name: m_WeightedMode
+      Entry: 3
+      Data: 0
+    - Name: m_InWeight
+      Entry: 4
+      Data: 0
+    - Name: m_OutWeight
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 3
+      Data: 8
+    - Name: 
+      Entry: 3
+      Data: 8
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: transform
+      Entry: 10
+      Data: 0
+    - Name: useCurrentValue
+      Entry: 5
+      Data: false
+    - Name: startScale
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: endScale
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: resetOnStart
+      Entry: 5
+      Data: false
+    - Name: resetOnStop
+      Entry: 5
+      Data: false
+    - Name: resetOnOver
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: useAnimationEvent
+      Entry: 5
+      Data: false
+    - Name: onInit
+      Entry: 7
+      Data: 21|UnityEngine.Events.UnityEvent, UnityEngine.CoreModule
+    - Name: m_PersistentCalls
+      Entry: 7
+      Data: 22|UnityEngine.Events.PersistentCallGroup, UnityEngine.CoreModule
+    - Name: m_Calls
+      Entry: 7
+      Data: 23|System.Collections.Generic.List`1[[UnityEngine.Events.PersistentCall,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: onStart
+      Entry: 7
+      Data: 24|UnityEngine.Events.UnityEvent, UnityEngine.CoreModule
+    - Name: m_PersistentCalls
+      Entry: 7
+      Data: 25|UnityEngine.Events.PersistentCallGroup, UnityEngine.CoreModule
+    - Name: m_Calls
+      Entry: 7
+      Data: 26|System.Collections.Generic.List`1[[UnityEngine.Events.PersistentCall,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: onComplete
+      Entry: 7
+      Data: 27|UnityEngine.Events.UnityEvent, UnityEngine.CoreModule
+    - Name: m_PersistentCalls
+      Entry: 7
+      Data: 28|UnityEngine.Events.PersistentCallGroup, UnityEngine.CoreModule
+    - Name: m_Calls
+      Entry: 7
+      Data: 29|System.Collections.Generic.List`1[[UnityEngine.Events.PersistentCall,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 

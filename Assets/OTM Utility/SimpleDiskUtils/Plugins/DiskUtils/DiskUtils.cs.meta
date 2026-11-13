@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 2d00e766200314a0797180e9ac528644
+timeCreated: 1459149326
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 59382
+  packageName: Simple Disk Utils
+  packageVersion: 1.1
+  assetPath: Assets/SimpleDiskUtils/Plugins/DiskUtils/DiskUtils.cs
+  uploadId: 143942
