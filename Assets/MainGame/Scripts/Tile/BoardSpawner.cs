@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum MahjongBoardPlane
+public enum TileBoardPlane
 {
     XZ_Flat,       // Flat on a table (Grid is X/Z, layers stack UP on Y)
     XY_Vertical    // Standing upright (Grid is X/Y, layers stack OUT on Z)
@@ -14,25 +14,22 @@ public enum GridSizingMode
     FitToBoxCollider     // Measure a physical BoxCollider in the scene and divide it up
 }
 
-public class MahjongVisualSpawner : MonoBehaviour
+public class TileVisualSpawner : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("Requires a prefab with the MahjongTile component.")]
-    [SerializeField] private MahjongTile tilePrefab;
+    [Tooltip("Requires a prefab with the Tile component.")]
+    [SerializeField] private Tile tilePrefab;
     [Tooltip("Optional. Tiles will be grouped under this object.")]
     [SerializeField] private Transform boardRoot;
-    
+
     [Header("Level Data")]
-    [SerializeField] private MahjongLevelData levelAsset;
+    [Tooltip("Layer heights are controlled per layer inside this asset.")]
+    [SerializeField] private TileLevelData levelAsset;
 
     [Header("Orientation & Stacking")]
-    [SerializeField] private MahjongBoardPlane boardPlane = MahjongBoardPlane.XZ_Flat;
+    [SerializeField] private TileBoardPlane boardPlane = TileBoardPlane.XZ_Flat;
     [SerializeField] private Vector3 tileRotation = Vector3.zero;
     [SerializeField] private bool invertStackingDirection = false;
-    [Tooltip("The base thickness of a single tile.")]
-    [SerializeField] private float layerThickness = 0.3f;
-    [Tooltip("EXTRA empty distance between each layer (useful for shadows/camera spacing).")]
-    [SerializeField] private float distanceBetweenLayers = 0f;
 
     [Header("Grid Sizing")]
     [SerializeField] private GridSizingMode sizingMode = GridSizingMode.Manual;
@@ -53,7 +50,7 @@ public class MahjongVisualSpawner : MonoBehaviour
     [Tooltip("Centers the fully generated board on the parent spawner object.")]
     [SerializeField] private bool centerBoard = true;
 
-    private readonly List<MahjongTile> spawnedTiles = new List<MahjongTile>();
+    private readonly List<Tile> spawnedTiles = new List<Tile>();
 
     private void Start()
     {
@@ -67,7 +64,7 @@ public class MahjongVisualSpawner : MonoBehaviour
 
         if (levelAsset == null || tilePrefab == null)
         {
-            Debug.LogError("MahjongVisualSpawner: Missing Level Asset or Tile Prefab setup.");
+            Debug.LogError("TileVisualSpawner: Missing Level Asset or Tile Prefab setup.");
             return;
         }
 
@@ -101,8 +98,8 @@ public class MahjongVisualSpawner : MonoBehaviour
         {
             // Calculate true world size of the box collider (ignoring rotation)
             float sizeU = targetBoundsBox.size.x * targetBoundsBox.transform.lossyScale.x;
-            float sizeV = boardPlane == MahjongBoardPlane.XZ_Flat ? 
-                          targetBoundsBox.size.z * targetBoundsBox.transform.lossyScale.z : 
+            float sizeV = boardPlane == TileBoardPlane.XZ_Flat ?
+                          targetBoundsBox.size.z * targetBoundsBox.transform.lossyScale.z :
                           targetBoundsBox.size.y * targetBoundsBox.transform.lossyScale.y;
 
             stepX = sizeU / maxW;
@@ -116,20 +113,21 @@ public class MahjongVisualSpawner : MonoBehaviour
         {
             float boardWidth = maxW * stepX;
             float boardHeight = maxH * stepY;
-            
+
             // Subtract half the board size, then add half a cell to align center-to-center
             startU = -(boardWidth / 2f) + (stepX / 2f);
             startV = -(boardHeight / 2f) + (stepY / 2f);
         }
 
-        // Total stack shift
-        float layerTotalShift = layerThickness + distanceBetweenLayers;
         float stackSign = invertStackingDirection ? -1f : 1f;
 
         // SPAWNING LOOP
         for (int z = 0; z < levelAsset.layers.Count; z++)
         {
-            MahjongLayer layer = levelAsset.layers[z];
+            TileLayer layer = levelAsset.layers[z];
+
+            // Per-layer stack height (sum of shifts from the base up to this layer)
+            float layerStackHeight = levelAsset.GetLayerStackPosition(z);
 
             for (int y = 0; y < layer.height; y++)
             {
@@ -139,14 +137,14 @@ public class MahjongVisualSpawner : MonoBehaviour
                     {
                         // 1. Calculate Grid Base Coordinates
                         float posU = startU + ((x + layer.offset.x) * stepX);
-                        float posV = startV + ((y + layer.offset.y) * stepY); 
-                        
+                        float posV = startV + ((y + layer.offset.y) * stepY);
+
                         // 2. Calculate Stacking Depth
-                        float posStack = z * layerTotalShift * stackSign; 
+                        float posStack = layerStackHeight * stackSign;
 
                         // 3. Map to 3D Space depending on Table or Wall orientation
                         Vector3 spawnPos;
-                        if (boardPlane == MahjongBoardPlane.XZ_Flat)
+                        if (boardPlane == TileBoardPlane.XZ_Flat)
                         {
                             spawnPos = new Vector3(posU, posStack, posV); // Depth is on Y
                         }
@@ -156,11 +154,11 @@ public class MahjongVisualSpawner : MonoBehaviour
                             spawnPos = new Vector3(posU, -posV, posStack); // Depth is on Z
                         }
 
-                        MahjongTile tile = Instantiate(tilePrefab, parent);
+                        Tile tile = Instantiate(tilePrefab, parent);
                         tile.transform.localPosition = spawnPos;
                         tile.transform.localRotation = customRotation;
                         tile.name = $"Tile_{x}_{y}_L{z}";
-                        
+
                         spawnedTiles.Add(tile);
                     }
                 }

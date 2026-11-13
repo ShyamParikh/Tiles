@@ -739,16 +739,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoardSpawner
   tilePrefab: {fileID: 5272255644890200733, guid: 7eb34728288256b4bb48dfb44cd7c104, type: 3}
   boardRoot: {fileID: 1271533676}
-  levelAsset: {fileID: 11400000, guid: c7a45ebe2525d4d51933ae23297b6128, type: 2}
+  levelAsset: {fileID: 11400000, guid: c4bd26cfbb999412b8efd285d558b5cc, type: 2}
   boardPlane: 1
   tileRotation: {x: 180, y: 0, z: 180}
   invertStackingDirection: 0
-  layerThickness: 0
-  distanceBetweenLayers: -55
   sizingMode: 0
   manualTileSize: {x: 1, y: 1}
-  manualGap: {x: 100, y: 100}
-  totalAreaDimensions: {x: 800, y: 800}
+  manualGap: {x: 112, y: 101}
+  totalAreaDimensions: {x: 900, y: 900}
   targetBoundsBox: {fileID: 0}
   centerBoard: 1
 --- !u!114 &1271533678
@@ -922,7 +920,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1961937889}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

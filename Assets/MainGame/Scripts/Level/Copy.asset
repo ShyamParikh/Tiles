@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
+  m_Name: Copy
+  m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
+  defaultWidth: 7
+  defaultHeight: 7
+  baseLayerHeight: -15
+  defaultLayerShift: -20
+  layers:
+  - width: 7
+    height: 7
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: 0
+    grid: 01010100000000000001000000000000010000000000000100000000000001000000000000010000000000000101010000
+  - width: 7
+    height: 7
+    offset: {x: -0.5, y: 0}
+    overrideShift: 0
+    customShift: -20
+    grid: 00010101000000000000010000000000000100000000000001000000000000010000000000000100000000000001010100
+  - width: 7
+    height: 7
+    offset: {x: -1, y: 0}
+    overrideShift: 0
+    customShift: -20
+    grid: 00000101010000000000000100000000000001000000000000010000000000000100000000000001000000000000010101
+  - width: 7
+    height: 7
+    offset: {x: -0.5, y: 0}
+    overrideShift: 0
+    customShift: -20
+    grid: 00000101010000000000000100000000000001000000000000010000000000000100000000000001000000000000010101
+  - width: 7
+    height: 7
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: -20
+    grid: 00000101010000000000000100000000000001000000000000010000000000000100000000000001000000000000010101

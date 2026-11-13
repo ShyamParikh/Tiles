@@ -5,7 +5,7 @@ using UnityEngine;
 /// It contains no gameplay. It only tells the spawner which mesh is the tile body,
 /// so the spawner can measure the real size of the tile.
 /// </summary>
-public class MahjongTile : MonoBehaviour
+public class Tile : MonoBehaviour
 {
     [Tooltip("Drag the RoundedCube child object here (the one with the MeshFilter).")]
     [SerializeField] private MeshFilter bodyMesh;
