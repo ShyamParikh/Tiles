@@ -85,6 +85,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8597508008641139744}
   - component: {fileID: 5272255644890200733}
+  - component: {fileID: 8050099857392527215}
   m_Layer: 6
   m_Name: TilePrefab3D
   m_TagString: Untagged
@@ -122,6 +123,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MahjongTile
   bodyMesh: {fileID: 2628835231473351947}
+  bodyRenderer: {fileID: 7601395786204351049}
+  faceImage: {fileID: 8202269082539436921}
+  col: {fileID: 8050099857392527215}
+  rotationOnSlot: {x: 0, y: 0, z: 0}
+  blockedColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
+  bodyColorProperty: _BaseColor
+--- !u!65 &8050099857392527215
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3662799585550327246}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.13, y: 1, z: 0.3}
+  m_Center: {x: 0.000000059604645, y: 0, z: 0}
 --- !u!1 &6034516681193958712
 GameObject:
   m_ObjectHideFlags: 0
@@ -303,40 +331,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 374447785261094098, guid: 7cdc233a2d05e8647a09027cc3c55083, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8894459867944245023}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7cdc233a2d05e8647a09027cc3c55083, type: 3}
---- !u!1 &1267732408727563510 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 374447785261094098, guid: 7cdc233a2d05e8647a09027cc3c55083, type: 3}
-  m_PrefabInstance: {fileID: 1487786216616081444}
-  m_PrefabAsset: {fileID: 0}
---- !u!65 &8894459867944245023
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1267732408727563510}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.11256158, y: 0.07640433, z: 0.09509766}
-  m_Center: {x: 0.000000059604645, y: 0, z: 0}
 --- !u!33 &2628835231473351947 stripped
 MeshFilter:
   m_CorrespondingSourceObject: {fileID: 3521482965313881391, guid: 7cdc233a2d05e8647a09027cc3c55083, type: 3}
+  m_PrefabInstance: {fileID: 1487786216616081444}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &7601395786204351049 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 9068060109535654509, guid: 7cdc233a2d05e8647a09027cc3c55083, type: 3}
   m_PrefabInstance: {fileID: 1487786216616081444}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &8837433337605658449 stripped

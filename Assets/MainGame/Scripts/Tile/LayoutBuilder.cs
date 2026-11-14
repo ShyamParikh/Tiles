@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 using UnityEditor;
 
 [CustomEditor(typeof(TileLevelData))]
@@ -184,4 +184,4 @@ public class TileLevelEditor : Editor
 
         if (e.type == EventType.MouseDrag) Repaint();
     }
-}
+}*/

@@ -12,6 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
   m_Name: Copy
   m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
+  library: {fileID: 11400000, guid: 063f1797a67b54562bc986bcd146af86, type: 2}
+  facePoolEntries:
+  - faceId: 0
+    tileCount: 15
+    lockedTileTypeId: 
+  - faceId: 1
+    tileCount: 15
+    lockedTileTypeId: Marble
+  - faceId: 2
+    tileCount: 15
+    lockedTileTypeId: Classic
+  - faceId: 3
+    tileCount: 15
+    lockedTileTypeId: Marble
+  - faceId: 4
+    tileCount: 9
+    lockedTileTypeId: 
+  tilePoolEntries:
+  - tileTypeId: Classic
+    tileCount: 36
+  - tileTypeId: Marble
+    tileCount: 33
+  maxDifferentFaces: 0
+  seed: 0
+  tileTypeId: 
+  facePool: 
   defaultWidth: 7
   defaultHeight: 7
   baseLayerHeight: -15
@@ -47,3 +73,9 @@ MonoBehaviour:
     overrideShift: 0
     customShift: -20
     grid: 00000101010000000000000100000000000001000000000000010000000000000100000000000001000000000000010101
+  - width: 7
+    height: 7
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: -20
+    grid: 00000000000101010000000000010100000000000101000000000001010000000000010100000000000101010000000000
