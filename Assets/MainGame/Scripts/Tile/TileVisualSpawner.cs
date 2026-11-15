@@ -244,6 +244,8 @@ public class TileVisualSpawner : MonoBehaviour
             library.TryGetFaceSprite(assignment.faceId, out Sprite faceSprite);
             tile.Init(assignment.faceId, faceSprite, cell.layer, new Vector2(cellU, cellV));
 
+            ApplyLevelLook(tile, level, assignment);
+
             spawnedTiles.Add(tile);
         }
 
@@ -256,6 +258,20 @@ public class TileVisualSpawner : MonoBehaviour
 
         if (Application.isPlaying)
             boardGenerated?.Invoke(new List<Tile>(spawnedTiles));
+    }
+
+    /// <summary>
+    /// Applies the level's material and color overrides (Face > Tile Type > Level Default).
+    /// If the level does not override something, the tile keeps its prefab's own look.
+    /// </summary>
+    private void ApplyLevelLook(Tile tile, TileLevelData level, SpawnAssignment assignment)
+    {
+        // Material first, because replacing the material re-reads the tile's base colors.
+        if (level.TryGetTileMaterial(assignment.faceId, assignment.tileTypeId, out Material material))
+            tile.SetBodyMaterial(material, level.materialTargetSlot);
+
+        if (level.TryGetTileColor(assignment.faceId, assignment.tileTypeId, out Color color))
+            tile.SetCustomColor(color, level.targetMaterialSlot);
     }
 
     private List<SpawnAssignment> BuildSpawnAssignments(

@@ -26,9 +26,15 @@ public class TileTrayManager : Manager<TileTrayManager>
     private readonly Dictionary<int, TileMergeData> mergeDataByFace = new Dictionary<int, TileMergeData>();
 
     private bool isLocked;
+    private int externalLockCount;
 
     public int TileCount => trayTiles.Count;
     public int SlotCount => slots.Count;
+    public int FreeSlotCount => slots.Count - trayTiles.Count;
+    public IReadOnlyList<Tile> TrayTiles => trayTiles;
+
+    /// <summary>True while a tile is flying into the tray, or a booster / special tile effect is running.</summary>
+    public bool IsLocked => isLocked || externalLockCount > 0;
 
     private void OnEnable()
     {
@@ -54,15 +60,25 @@ public class TileTrayManager : Manager<TileTrayManager>
             Debug.Log($"[TRAY] Ready with {slots.Count} tray slots.");
     }
 
+    /// <summary>
+    /// Used by BoosterManager and SpecialTileManager so no tile can be clicked while they run.
+    /// Calls are counted: every SetExternalLock(true) needs its own SetExternalLock(false).
+    /// </summary>
+    public void SetExternalLock(bool locked)
+    {
+        if (locked) externalLockCount++;
+        else externalLockCount = Mathf.Max(0, externalLockCount - 1);
+    }
+
     private void OnTileClicked(Tile tile)
     {
         if (enableDebugLogs)
-            Debug.Log($"[TRAY] Received OnTileClicked for '{(tile != null ? tile.name : "NULL")}' | isLocked: {isLocked} | trayTiles: {trayTiles.Count}/{slots.Count}");
+            Debug.Log($"[TRAY] Received OnTileClicked for '{(tile != null ? tile.name : "NULL")}' | isLocked: {IsLocked} | trayTiles: {trayTiles.Count}/{slots.Count}");
 
         if (tile == null) return;
-        if (isLocked)
+        if (IsLocked)
         {
-            Debug.LogWarning("[TRAY] Ignored click: Tray is currently LOCKED waiting for previous tile to finish flying.");
+            Debug.LogWarning("[TRAY] Ignored click: Tray is currently LOCKED (tile flying, booster or special tile effect running).");
             return;
         }
         if (tile.IsBlocked)
@@ -92,8 +108,16 @@ public class TileTrayManager : Manager<TileTrayManager>
         }
 
         isLocked = true;
+        PlaceTileInTray(tile, () => OnTileArrived(tile));
+    }
 
+    /// <summary>
+    /// Shared by normal clicks and boosters: registers the tile in the tray and flies it to its slot.
+    /// </summary>
+    private void PlaceTileInTray(Tile tile, Action onArrived)
+    {
         tilePickedUp?.Invoke(tile);
+        tile.SetBlocked(false);
         tile.DisableInteraction();
         tile.DisableShadows();
 
@@ -109,7 +133,7 @@ public class TileTrayManager : Manager<TileTrayManager>
             MoveTileToSlot(trayTiles[i], slots[i], null);
         }
 
-        MoveTileToSlot(tile, slots[insertIndex], () => OnTileArrived(tile));
+        MoveTileToSlot(tile, slots[insertIndex], onArrived);
     }
 
     private int GetInsertIndex(int faceId)
@@ -198,6 +222,66 @@ public class TileTrayManager : Manager<TileTrayManager>
         completeCallback?.Invoke();
     }
 
+    // ---------------- Booster API ----------------
+
+    /// <summary>
+    /// Booster path: puts a tile (from anywhere on the board, even a covered one) into the tray.
+    /// Does NOT check for merge / tray full. Call TryMergeFace once every tile has arrived.
+    /// </summary>
+    public void InsertTileFromBooster(Tile tile, Action onArrived)
+    {
+        if (tile == null || trayTiles.Count >= slots.Count)
+        {
+            onArrived?.Invoke();
+            return;
+        }
+
+        PlaceTileInTray(tile, () =>
+        {
+            if (tile != null && tile.Slot != null) tile.Slot.PlayBumpAnimation();
+            onArrived?.Invoke();
+        });
+    }
+
+    /// <summary>Starts the merge for this face if the tray holds a full set of it.</summary>
+    public bool TryMergeFace(int faceId)
+    {
+        if (mergeDataByFace.TryGetValue(faceId, out TileMergeData data) && data.CanMerge())
+        {
+            MergeTiles(data);
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Undo path: takes a tile out of the tray and slides the tiles after it one slot to the left.
+    /// The caller is responsible for sending the tile back to the board.
+    /// </summary>
+    public bool RemoveTileFromTray(Tile tile)
+    {
+        if (tile == null) return false;
+
+        int index = trayTiles.IndexOf(tile);
+        if (index < 0) return false;
+
+        trayTiles.RemoveAt(index);
+
+        if (mergeDataByFace.TryGetValue(tile.FaceId, out TileMergeData data))
+        {
+            data.tiles.Remove(tile);
+            if (data.tiles.Count == 0) mergeDataByFace.Remove(tile.FaceId);
+        }
+
+        for (int i = index; i < trayTiles.Count; i++)
+        {
+            if (trayTiles[i].Slot != slots[i])
+                MoveTileToSlot(trayTiles[i], slots[i], null);
+        }
+
+        return true;
+    }
+
     public void ResetTray()
     {
         for (int i = 0; i < trayTiles.Count; i++)
@@ -211,5 +295,6 @@ public class TileTrayManager : Manager<TileTrayManager>
         trayTiles.Clear();
         mergeDataByFace.Clear();
         isLocked = false;
+        externalLockCount = 0;
     }
 }

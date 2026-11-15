@@ -77,6 +77,15 @@ public class TileBoardManager : Manager<TileBoardManager>
 
     private void OnBoardGenerated(List<Tile> tiles)
     {
+        RebuildBlocking(tiles);
+    }
+
+    /// <summary>
+    /// Recalculates which tiles cover which. Pass every tile that is currently ON the board
+    /// (not tiles in the tray). Called on level spawn, and by the Shuffle / Undo boosters.
+    /// </summary>
+    public void RebuildBlocking(List<Tile> tiles)
+    {
         dependentTiles.Clear();
         blockedByTiles.Clear();
         blockerCount.Clear();
@@ -169,7 +178,8 @@ public class TileBoardManager : Manager<TileBoardManager>
             return invertTopDirection ? dist : -dist;
         }
 
-        return Vector3.Dot(tile.transform.localPosition, localTopAxis);
+        // Uses the rest position (not the animated one) so it is correct even while tiles are moving.
+        return Vector3.Dot(tile.RestLocalPosition, localTopAxis);
     }
 
     private bool Overlaps(Tile a, Tile b)

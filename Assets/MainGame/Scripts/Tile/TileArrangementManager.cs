@@ -52,6 +52,27 @@ public class TileArrangementManager : Manager<TileArrangementManager>
     [SerializeField] private int wiggleVibrato = 18;
     [SerializeField] private float wiggleRandomness = 45f;
 
+    [Header("6. Return To Board (Undo Booster)")]
+    [SerializeField] private float returnDuration = 0.4f;
+    [SerializeField] private Ease returnEase = Ease.OutBack;
+
+    [Header("7. Shuffle Booster")]
+    [Tooltip("Time for all tiles to fly into the middle of the board.")]
+    [SerializeField] private float shuffleGatherDuration = 0.35f;
+    [SerializeField] private Ease shuffleGatherEase = Ease.InOutQuad;
+    [Tooltip("Small random offset so gathered tiles don't sit exactly on top of each other.")]
+    [SerializeField] private float shuffleGatherJitter = 0.25f;
+    [Tooltip("How long the tiles stay (spinning) in the middle before spreading out.")]
+    [SerializeField] private float shuffleHoldDuration = 0.3f;
+    [Tooltip("Spin axis in the tile's local space while gathered. (0,0,1) for XY_Vertical boards, (0,1,0) for XZ_Flat.")]
+    [SerializeField] private Vector3 shuffleSpinAxis = new Vector3(0f, 0f, 1f);
+    [SerializeField] private float shuffleSpreadDuration = 0.4f;
+    [SerializeField] private Ease shuffleSpreadEase = Ease.OutBack;
+    [Tooltip("Delay between one tile starting to spread and the next (bottom layers first).")]
+    [SerializeField] private float shuffleSpreadStagger = 0.01f;
+    [Tooltip("The staggered spread never takes longer than this in total.")]
+    [SerializeField] private float shuffleMaxSpreadDelay = 0.5f;
+
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = true;
 
@@ -245,6 +266,109 @@ public class TileArrangementManager : Manager<TileArrangementManager>
         {
             if (tile != null) tile.RestoreBoardRestTransform();
         });
+    }
+
+    /// <summary>
+    /// Undo booster: flies a tile from the tray back to its board spot (position, rotation and scale).
+    /// Re-parents the tile to the board and makes it clickable again.
+    /// </summary>
+    public void ReturnTileToBoard(Tile tile, Action onComplete)
+    {
+        if (tile == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        tile.transform.DOKill();
+        tile.PrepareReturnToBoard();
+
+        Sequence seq = DOTween.Sequence();
+        seq.SetTarget(tile.transform);
+        seq.SetId(TweenId);
+        seq.SetLink(tile.gameObject);
+
+        seq.Join(tile.transform.DOLocalMove(tile.RestLocalPosition, returnDuration).SetEase(returnEase));
+        seq.Join(tile.transform.DOLocalRotateQuaternion(tile.RestLocalRotation, returnDuration).SetEase(Ease.OutQuad));
+        seq.Join(tile.transform.DOScale(tile.BoardRestLocalScale, returnDuration).SetEase(Ease.OutQuad));
+
+        seq.OnComplete(() =>
+        {
+            if (tile != null)
+            {
+                tile.RestoreBoardRestTransform();
+                tile.transform.localScale = tile.BoardRestLocalScale;
+            }
+            onComplete?.Invoke();
+        });
+    }
+
+    /// <summary>
+    /// Shuffle booster: every tile flies to the middle of the board, spins, then spreads out to its NEW rest position.
+    /// Call Tile.SetBoardPlacement on each tile first, so RestLocalPosition already holds the new spot.
+    /// </summary>
+    public void PlayShuffle(List<Tile> tiles, Action onComplete)
+    {
+        List<Tile> ordered = new List<Tile>();
+        if (tiles != null)
+        {
+            foreach (Tile tile in tiles)
+            {
+                if (tile != null) ordered.Add(tile);
+            }
+        }
+
+        if (ordered.Count == 0)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        // Bottom layers spread out first.
+        ordered.Sort((a, b) => a.LayerIndex.CompareTo(b.LayerIndex));
+
+        Vector3 center = Vector3.zero;
+        for (int i = 0; i < ordered.Count; i++) center += ordered[i].transform.localPosition;
+        center /= ordered.Count;
+
+        Vector3 spinAxis = shuffleSpinAxis.sqrMagnitude > 0.0001f ? shuffleSpinAxis.normalized : Vector3.forward;
+        float stagger = Mathf.Min(shuffleSpreadStagger, shuffleMaxSpreadDelay / ordered.Count);
+        float spinDuration = shuffleGatherDuration + shuffleHoldDuration;
+        int remaining = ordered.Count;
+
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            Tile tile = ordered[i];
+            tile.transform.DOKill();
+
+            Vector3 gatherPosition = center + UnityEngine.Random.insideUnitSphere * shuffleGatherJitter;
+
+            Sequence seq = DOTween.Sequence();
+            seq.SetTarget(tile.transform);
+            seq.SetId(TweenId);
+            seq.SetLink(tile.gameObject);
+
+            // 1. Gather in the middle while spinning a full turn
+            seq.Append(tile.transform.DOLocalMove(gatherPosition, shuffleGatherDuration).SetEase(shuffleGatherEase));
+            seq.Join(tile.transform.DOLocalRotate(spinAxis * 360f, spinDuration, RotateMode.LocalAxisAdd).SetEase(Ease.InOutSine));
+
+            // 2. Hold, then spread to the new rest spot (staggered per tile)
+            seq.AppendInterval(shuffleHoldDuration + i * stagger);
+            seq.Append(tile.transform.DOLocalMove(tile.RestLocalPosition, shuffleSpreadDuration).SetEase(shuffleSpreadEase));
+            seq.Join(tile.transform.DOLocalRotateQuaternion(tile.RestLocalRotation, shuffleSpreadDuration).SetEase(Ease.OutQuad));
+
+            seq.OnComplete(() =>
+            {
+                if (tile != null) tile.RestoreBoardRestTransform();
+
+                remaining--;
+                if (remaining == 0)
+                {
+                    if (enableDebugLogs) Debug.Log("[ARRANGE] Shuffle COMPLETE.");
+                    onComplete?.Invoke();
+                }
+            });
+        }
     }
 
     public void KillAll()

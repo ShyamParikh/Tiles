@@ -15,6 +15,8 @@ public class TileInputManager : MonoBehaviour
     [SerializeField] private TileBoardManager boardManager;
     [Tooltip("REQUIRED: Drag your TileArrangementManager object here (plays wiggle on blocked tiles).")]
     [SerializeField] private TileArrangementManager arrangementManager;
+    [Tooltip("Optional: input is ignored while a booster is running.")]
+    [SerializeField] private BoosterManager boosterManager;
     [SerializeField] private Material selectOutlineMaterial;
 
     [Header("Raycast Settings")]
@@ -52,7 +54,9 @@ public class TileInputManager : MonoBehaviour
 
     private bool IsGamePlaying()
     {
-        return gameManager != null && gameManager.IsPlaying;
+        if (gameManager == null || !gameManager.IsPlaying) return false;
+        if (boosterManager != null && boosterManager.IsBusy) return false;
+        return true;
     }
 
     private void HandleControl()

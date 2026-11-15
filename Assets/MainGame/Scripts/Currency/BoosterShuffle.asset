@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f266fdd8f0e07b54daa61e68ff717338, type: 3}
+  m_Name: BoosterShuffle
+  m_EditorClassIdentifier: Assembly-CSharp::com.otm.currency.Currency
+  serializationData:
+    SerializedFormat: 1
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: Ik9uQ3VycmVuY3lFYXJuIjogew0KICAgICIkaWQiOiAwLA0KICAgICIkdHlwZSI6ICIwfGNvbS5vdG0udXRpbGl0eS5BY3Rpb25TeXN0ZW1gMVtbU3lzdGVtLkludDMyLCBtc2NvcmxpYl1dLCBBc3NlbWJseS1DU2hhcnAiDQp9LA0KIk9uQ3VycmVuY3lTcGVuZCI6IHsNCiAgICAiJGlkIjogMSwNCiAgICAiJHR5cGUiOiAwDQp9LA0KIk9uSW5maW5pdGVPdmVyIjogew0KICAgICIkaWQiOiAyLA0KICAgICIkdHlwZSI6ICIxfGNvbS5vdG0udXRpbGl0eS5BY3Rpb25TeXN0ZW0sIEFzc2VtYmx5LUNTaGFycCINCn0sDQoiT25JbmZpbml0ZVVwZGF0ZSI6IHsNCiAgICAiJGlkIjogMywNCiAgICAiJHR5cGUiOiAiMnxjb20ub3RtLnV0aWxpdHkuQWN0aW9uU3lzdGVtYDFbW1N5c3RlbS5UaW1lU3BhbiwgbXNjb3JsaWJdXSwgQXNzZW1ibHktQ1NoYXJwIg0KfSwNCiJPbkN1cnJlbmN5Q2hhbmdlIjogew0KICAgICIkaWQiOiA0LA0KICAgICIkdHlwZSI6IDANCn0=
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  key: booster_shuffle
+  defaultValue: 3

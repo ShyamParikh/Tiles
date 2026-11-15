@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: TileLibrary
   m_EditorClassIdentifier: Assembly-CSharp::TileLibrary
   tileTypes:
-  - id: Classic
-    prefab: {fileID: 5272255644890200733, guid: 9737ddbfb6a104513abaff79a2ea55ce, type: 3}
-  - id: Marble
-    prefab: {fileID: 5272255644890200733, guid: 45f77481bfcb649b7a78a022e7a533ee, type: 3}
+  - id: Cloudy
+    prefab: {fileID: 6219456597700143080, guid: 9737ddbfb6a104513abaff79a2ea55ce, type: 3}
+  - id: Merge
+    prefab: {fileID: 699920129669268483, guid: 7eb34728288256b4bb48dfb44cd7c104, type: 3}
+  - id: Question
+    prefab: {fileID: 7785113519673179665, guid: 45f77481bfcb649b7a78a022e7a533ee, type: 3}
   faces:
   - id: 0
     displayName: Box

@@ -8,6 +8,7 @@ public class TileLevelEditor : Editor
     private int currentLayerIndex = 0;
     private bool isPainting = false;
     private bool paintValue = true;
+    private bool showDefaultLook = true;
     private bool showFacePool = true;
     private bool showTilePool = true;
 
@@ -135,6 +136,10 @@ public class TileLevelEditor : Editor
             EditorUtility.SetDirty(level);
         }
 
+        // Default look does not need a library, so it is drawn before the library check.
+        EditorGUILayout.Space(4);
+        DrawDefaultLook(level);
+
         if (level.library == null)
         {
             EditorGUILayout.HelpBox("Assign a Tile Library to configure the Tile Pool and Face Pool.", MessageType.Info);
@@ -204,6 +209,13 @@ public class TileLevelEditor : Editor
                     }
 
                     EditorGUILayout.EndHorizontal();
+
+                    if (existing != null)
+                    {
+                        DrawLookRow(level, "Change Tile Type Look",
+                            ref existing.overrideColor, ref existing.tileColor,
+                            ref existing.overrideMaterial, ref existing.tileMaterial);
+                    }
                 }
 
                 if (level.tilePoolEntries.Count > 0 && GUILayout.Button("Clear Tile Pool (Use Default)"))
@@ -294,6 +306,13 @@ public class TileLevelEditor : Editor
 
                 EditorGUILayout.EndHorizontal();
 
+                if (existing != null)
+                {
+                    DrawLookRow(level, "Change Face Look",
+                        ref existing.overrideColor, ref existing.tileColor,
+                        ref existing.overrideMaterial, ref existing.tileMaterial);
+                }
+
                 if (existing != null && existing.tileCount > 0 && existing.tileCount % TileMergeData.TilesPerMerge != 0)
                 {
                     EditorGUILayout.HelpBox($"'{label}' has {existing.tileCount} tiles — must be a multiple of {TileMergeData.TilesPerMerge} (e.g. 3, 6, 9).", MessageType.Warning);
@@ -322,6 +341,99 @@ public class TileLevelEditor : Editor
             Undo.RecordObject(level, "Change Pool Randomization");
             level.maxDifferentFaces = Mathf.Max(0, newMaxFaces);
             level.seed = newSeed;
+            EditorUtility.SetDirty(level);
+        }
+    }
+
+    // ---------------- Look (Color & Material) ----------------
+
+    private void DrawDefaultLook(TileLevelData level)
+    {
+        showDefaultLook = EditorGUILayout.Foldout(showDefaultLook, "Level Default Look (Color & Material)", true, EditorStyles.foldoutHeader);
+        if (!showDefaultLook) return;
+
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField("Priority: Face > Tile Type > Level Default > the Tile prefab's own look.", EditorStyles.miniLabel);
+
+        EditorGUI.BeginChangeCheck();
+
+        // Color
+        EditorGUILayout.BeginHorizontal();
+        bool newOverrideColor = EditorGUILayout.ToggleLeft("Override Color", level.overrideDefaultTileColor, GUILayout.Width(110f));
+        Color newColor = level.defaultTileColor;
+        using (new EditorGUI.DisabledScope(!newOverrideColor))
+        {
+            newColor = EditorGUILayout.ColorField(level.defaultTileColor);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        int newColorSlot = EditorGUILayout.IntField(
+            new GUIContent("Color Material Slot", "-1 = tint ALL material slots. 0 = Element 0 only, 1 = Element 1 only, etc."),
+            level.targetMaterialSlot);
+
+        // Material
+        EditorGUILayout.BeginHorizontal();
+        bool newOverrideMaterial = EditorGUILayout.ToggleLeft("Override Material", level.overrideDefaultTileMaterial, GUILayout.Width(125f));
+        Material newMaterial = level.defaultTileMaterial;
+        using (new EditorGUI.DisabledScope(!newOverrideMaterial))
+        {
+            newMaterial = (Material)EditorGUILayout.ObjectField(level.defaultTileMaterial, typeof(Material), false);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        int newMaterialSlot = EditorGUILayout.IntField(
+            new GUIContent("Material Slot", "-1 = replace ALL material slots on the body mesh. 0 = Element 0 only, 1 = Element 1 only, etc."),
+            level.materialTargetSlot);
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(level, "Change Level Default Look");
+            level.overrideDefaultTileColor = newOverrideColor;
+            level.defaultTileColor = newColor;
+            level.targetMaterialSlot = Mathf.Max(-1, newColorSlot);
+            level.overrideDefaultTileMaterial = newOverrideMaterial;
+            level.defaultTileMaterial = newMaterial;
+            level.materialTargetSlot = Mathf.Max(-1, newMaterialSlot);
+            EditorUtility.SetDirty(level);
+        }
+
+        EditorGUILayout.EndVertical();
+    }
+
+    /// <summary>One compact row under a Tile Type / Face entry: [x] Color [picker]  [x] Material [object field].</summary>
+    private void DrawLookRow(TileLevelData level, string undoName,
+        ref bool overrideColor, ref Color color,
+        ref bool overrideMaterial, ref Material material)
+    {
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Space(18f);
+
+        bool newOverrideColor = EditorGUILayout.ToggleLeft("Color", overrideColor, GUILayout.Width(58f));
+        Color newColor = color;
+        using (new EditorGUI.DisabledScope(!newOverrideColor))
+        {
+            newColor = EditorGUILayout.ColorField(color, GUILayout.Width(60f));
+        }
+
+        GUILayout.Space(8f);
+
+        bool newOverrideMaterial = EditorGUILayout.ToggleLeft("Material", overrideMaterial, GUILayout.Width(68f));
+        Material newMaterial = material;
+        using (new EditorGUI.DisabledScope(!newOverrideMaterial))
+        {
+            newMaterial = (Material)EditorGUILayout.ObjectField(material, typeof(Material), false, GUILayout.MinWidth(80f));
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(level, undoName);
+            overrideColor = newOverrideColor;
+            color = newColor;
+            overrideMaterial = newOverrideMaterial;
+            material = newMaterial;
             EditorUtility.SetDirty(level);
         }
     }
