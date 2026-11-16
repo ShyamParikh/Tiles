@@ -277,6 +277,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 108165337}
   m_CullTransparentMesh: 1
+--- !u!1 &109046813
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 109046814}
+  - component: {fileID: 109046816}
+  - component: {fileID: 109046815}
+  m_Layer: 0
+  m_Name: CoinImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &109046814
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109046813}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 371236446}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -200, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &109046815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109046813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 316c733244e2bba4f80e1884b5a4d6c4, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &109046816
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109046813}
+  m_CullTransparentMesh: 1
 --- !u!1 &125299004
 GameObject:
   m_ObjectHideFlags: 0
@@ -1424,6 +1499,7 @@ GameObject:
   - component: {fileID: 371236446}
   - component: {fileID: 371236448}
   - component: {fileID: 371236447}
+  - component: {fileID: 371236449}
   m_Layer: 0
   m_Name: CoinContainer
   m_TagString: Untagged
@@ -1444,6 +1520,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1220369115}
+  - {fileID: 109046814}
   m_Father: {fileID: 570380349}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1489,6 +1566,33 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 371236445}
   m_CullTransparentMesh: 1
+--- !u!114 &371236449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371236445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fd62b05af9c044eb9836ae8c4ea88d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoinShower
+  economyManager: {fileID: 1991285525}
+  coinText: {fileID: 1220369116}
+  counterTarget: {fileID: 371236446}
+  textFormat: '{0}'
+  pulseStrength: 0.15
+  coinPrefab: {fileID: 7870565958510401818, guid: d92915dcef39744458246b2f54d1ccc5, type: 3}
+  coinParent: {fileID: 371236446}
+  spawnPoint: {fileID: 371236446}
+  spawnSpread: {x: 600, y: 200}
+  maxCoins: 15
+  showerDelay: 0.5
+  popDuration: 0.25
+  flyDuration: 0.6
+  stagger: 0.05
+  flyEase: 5
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -4884,6 +4988,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TileGameManager
   levels:
+  - {fileID: 11400000, guid: 0e1bab8c5a1d24fb998389a3a59be4d7, type: 2}
+  - {fileID: 11400000, guid: 50cc3aca011ff4b2791c983395b10e50, type: 2}
+  - {fileID: 11400000, guid: 93c3fd0d26c95440f84cbc4f6643ece7, type: 2}
+  - {fileID: 11400000, guid: 9cb25b002398e214b89f6429979fdb53, type: 2}
   - {fileID: 11400000, guid: c4bd26cfbb999412b8efd285d558b5cc, type: 2}
   loopLevels: 1
   progressKey: TileExplorer

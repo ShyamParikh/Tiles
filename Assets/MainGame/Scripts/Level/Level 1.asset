@@ -437,12 +437,12 @@ MonoBehaviour:
   facePool: 
   defaultWidth: 5
   defaultHeight: 1
-  baseLayerHeight: 15
-  defaultLayerShift: 0
+  baseLayerHeight: -15
+  defaultLayerShift: -25
   layers:
   - width: 5
     height: 1
     offset: {x: 0, y: 0}
     overrideShift: 0
-    customShift: 0
+    customShift: -15
     grid: 0100010001

@@ -193,20 +193,20 @@ MonoBehaviour:
   seed: 0
   tileTypeId: 
   facePool: 
-  defaultWidth: 5
-  defaultHeight: 1
-  baseLayerHeight: 15
-  defaultLayerShift: 25
+  defaultWidth: 7
+  defaultHeight: 7
+  baseLayerHeight: -15
+  defaultLayerShift: -25
   layers:
-  - width: 6
-    height: 2
+  - width: 8
+    height: 8
     offset: {x: 0, y: 0}
     overrideShift: 0
-    customShift: 15
-    grid: 010001000100000100010001
-  - width: 5
-    height: 1
-    offset: {x: 0, y: 0}
+    customShift: -15
+    grid: 00000000000000000000000000000000000000000000000000010001000100000000010001000100000000000000000000000000000000000000000000000000
+  - width: 7
+    height: 7
+    offset: {x: 0.5, y: 0.5}
     overrideShift: 0
-    customShift: 25
-    grid: 0100010001
+    customShift: -25
+    grid: 00000000000000000000000000000000000000000000010001000100000000000000000000000000000000000000000000

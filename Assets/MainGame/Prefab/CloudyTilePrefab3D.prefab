@@ -158,7 +158,9 @@ MonoBehaviour:
   blockedColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   bodyColorProperty: _BaseColor
   CoverCount: 0
-  cloud: {fileID: 3662799585550327246}
+  faceCover:
+    faceImage: {fileID: 8202269082539436921}
+    coverSprite: {fileID: 21300000, guid: a4b64c6ba46464d0d8e58433be44fd75, type: 3}
   coverAgain: 0
   onRevealed:
     m_PersistentCalls:
