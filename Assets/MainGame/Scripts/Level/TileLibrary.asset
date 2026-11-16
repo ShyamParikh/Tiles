@@ -19,6 +19,8 @@ MonoBehaviour:
     prefab: {fileID: 699920129669268483, guid: 7eb34728288256b4bb48dfb44cd7c104, type: 3}
   - id: Question
     prefab: {fileID: 7785113519673179665, guid: 45f77481bfcb649b7a78a022e7a533ee, type: 3}
+  - id: Classic
+    prefab: {fileID: 6724750909138396250, guid: 0dd8f57de99904c5abc94ec1a0e1e310, type: 3}
   faces:
   - id: 0
     displayName: Box
@@ -35,3 +37,105 @@ MonoBehaviour:
   - id: 4
     displayName: BasketBall
     sprite: {fileID: 21300000, guid: bffc7bab8a4f96b47b9f829de8a0864c, type: 3}
+  - id: 5
+    displayName: Bat
+    sprite: {fileID: 21300000, guid: 3183e36a6a48e81418b3221c67b132b9, type: 3}
+  - id: 6
+    displayName: BlueBook
+    sprite: {fileID: 21300000, guid: d591dbf670c6dd14487b616183f77300, type: 3}
+  - id: 7
+    displayName: RedBook
+    sprite: {fileID: 21300000, guid: 38d39cade35b8da42b75502fa78e6975, type: 3}
+  - id: 8
+    displayName: GreenBook
+    sprite: {fileID: 21300000, guid: 263956b31ecc54045816022c636e74d1, type: 3}
+  - id: 9
+    displayName: BoomBox
+    sprite: {fileID: 21300000, guid: d0f4882c6bdd93143a87228fcdf7d2d1, type: 3}
+  - id: 10
+    displayName: Bowling
+    sprite: {fileID: 21300000, guid: dcd8ad046c619824aa059fdd4f8c5a01, type: 3}
+  - id: 11
+    displayName: Buggy
+    sprite: {fileID: 21300000, guid: 2d21498cadc25294f940a3de46a21a99, type: 3}
+  - id: 12
+    displayName: Burger
+    sprite: {fileID: 21300000, guid: d7544457c44baf1449a482544fb91f43, type: 3}
+  - id: 13
+    displayName: Camera
+    sprite: {fileID: 21300000, guid: 0152f8ac104be77498c38c94024090f9, type: 3}
+  - id: 14
+    displayName: Car
+    sprite: {fileID: 21300000, guid: 138de611a07f896439d4593817272faf, type: 3}
+  - id: 15
+    displayName: Chocolate
+    sprite: {fileID: 21300000, guid: 6c5bb36f499f8334db0a7dce85db02c3, type: 3}
+  - id: 16
+    displayName: Scissor
+    sprite: {fileID: 21300000, guid: ba8e18b5121d35a4e8e4890d91de2653, type: 3}
+  - id: 17
+    displayName: AlarmClock
+    sprite: {fileID: 21300000, guid: d8cbac9c77684944f80b6693a89943fc, type: 3}
+  - id: 18
+    displayName: Console
+    sprite: {fileID: 21300000, guid: 3c436a7aee1a5dd4c8814c91a00b734c, type: 3}
+  - id: 19
+    displayName: RubixCube
+    sprite: {fileID: 21300000, guid: b93f38362e262d84c953b827f4f96dbe, type: 3}
+  - id: 20
+    displayName: Drum
+    sprite: {fileID: 21300000, guid: 2fa745cebccfd2747915a44bd3babb11, type: 3}
+  - id: 21
+    displayName: Donut
+    sprite: {fileID: 21300000, guid: 95a60bbae28c6624a9964888a6ec1bc5, type: 3}
+  - id: 22
+    displayName: Cup
+    sprite: {fileID: 21300000, guid: 69c0ba5ae07d52148b3796eaf5dfea7d, type: 3}
+  - id: 23
+    displayName: Globe
+    sprite: {fileID: 21300000, guid: 74eea368ddf80734da5b645fa58cb075, type: 3}
+  - id: 24
+    displayName: Omlet
+    sprite: {fileID: 21300000, guid: b9ee28c56e98a4e4c90686e79811fa08, type: 3}
+  - id: 25
+    displayName: Waffle
+    sprite: {fileID: 21300000, guid: 219c623f38c167544b5ba845ecc90b24, type: 3}
+  - id: 26
+    displayName: FootBall
+    sprite: {fileID: 21300000, guid: 8b6ed3322463e244d80d6b0eacafc9a2, type: 3}
+  - id: 27
+    displayName: FrenchFries
+    sprite: {fileID: 21300000, guid: cd3533cadc42b5940a3ff213ecf2f4da, type: 3}
+  - id: 28
+    displayName: Guitar
+    sprite: {fileID: 21300000, guid: 006fdf3796b3ed74583e133929055f32, type: 3}
+  - id: 29
+    displayName: AlienGun
+    sprite: {fileID: 21300000, guid: 945f442341bf74740b3d4c503d734791, type: 3}
+  - id: 30
+    displayName: Headphones
+    sprite: {fileID: 21300000, guid: ac6dbf3f08a265944b4d75a88ae4100c, type: 3}
+  - id: 31
+    displayName: Helmet
+    sprite: {fileID: 21300000, guid: fe64097e89462ce40af166a18bf441f9, type: 3}
+  - id: 32
+    displayName: IceCream
+    sprite: {fileID: 21300000, guid: 5cf5062ac9067674ea3e95799623f019, type: 3}
+  - id: 33
+    displayName: Keyboard
+    sprite: {fileID: 21300000, guid: 2fa30ec045e4136478b81396be1e2e2e, type: 3}
+  - id: 34
+    displayName: HulaHoop
+    sprite: {fileID: 21300000, guid: 5edf8f80035d0bb428c00f7b42845308, type: 3}
+  - id: 35
+    displayName: Hand
+    sprite: {fileID: 21300000, guid: 09297f44e7a0b3249b5b2cc891a5b381, type: 3}
+  - id: 36
+    displayName: QuestionMark
+    sprite: {fileID: 21300000, guid: af5acc608260d4d06984b6d161a9a5a7, type: 3}
+  - id: 37
+    displayName: QuestionMarkInversed
+    sprite: {fileID: 21300000, guid: 849364f97161b4dddb47b1b8271ba195, type: 3}
+  - id: 38
+    displayName: Cloud
+    sprite: {fileID: 21300000, guid: a4b64c6ba46464d0d8e58433be44fd75, type: 3}

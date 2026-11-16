@@ -2,72 +2,56 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Sends the most recently picked tile back from the tray to its board spot.
-/// Remembers the last N picked tiles (default 6). Tiles that already merged are gone and cannot be undone.
-/// </summary>
+/// <summary>Sends the last picked tile back from the tray to its board spot (remembers the last N picks).</summary>
 public class UndoBooster : BoosterBase
 {
-    [Header("Undo")]
     [SerializeField] private int maxUndoSteps = 6;
 
     private readonly List<Tile> history = new List<Tile>();
-    private readonly List<Tile> boardTiles = new List<Tile>();
 
     public override BoosterType Type => BoosterType.Undo;
 
     private void OnEnable()
     {
-        TileTrayManager.tilePickedUp += OnTilePickedUp;
-        TileTrayManager.startMerge += OnStartMerge;
+        TileTrayManager.tilePickedUp += OnPicked;
+        TileTrayManager.startMerge += OnMerged;
     }
 
     private void OnDisable()
     {
-        TileTrayManager.tilePickedUp -= OnTilePickedUp;
-        TileTrayManager.startMerge -= OnStartMerge;
+        TileTrayManager.tilePickedUp -= OnPicked;
+        TileTrayManager.startMerge -= OnMerged;
     }
 
-    public override void ResetForNewLevel()
-    {
-        history.Clear();
-    }
+    public override void ResetForNewLevel() { history.Clear(); }
 
-    private void OnTilePickedUp(Tile tile)
+    private void OnPicked(Tile tile)
     {
-        if (tile == null) return;
-
         history.Remove(tile);
         history.Add(tile);
-
-        while (history.Count > maxUndoSteps)
-            history.RemoveAt(0);
+        if (history.Count > maxUndoSteps) history.RemoveAt(0);
     }
 
-    private void OnStartMerge(List<Tile> tiles)
+    /// <summary>Merged tiles are gone and cannot be undone.</summary>
+    private void OnMerged(List<Tile> group)
     {
-        if (tiles == null) return;
-        for (int i = 0; i < tiles.Count; i++) history.Remove(tiles[i]);
+        foreach (Tile tile in group) history.Remove(tile);
     }
 
-    private void PruneHistory()
+    private void Prune()
     {
-        for (int i = history.Count - 1; i >= 0; i--)
-        {
-            Tile t = history[i];
-            if (t == null || t.Slot == null) history.RemoveAt(i);
-        }
+        history.RemoveAll(t => t == null || t.Slot == null);
     }
 
     public override bool CanExecute()
     {
-        PruneHistory();
+        Prune();
         return history.Count > 0;
     }
 
     public override void Execute(Action<bool> onFinished)
     {
-        PruneHistory();
+        Prune();
         if (history.Count == 0)
         {
             onFinished(false);
@@ -77,16 +61,13 @@ public class UndoBooster : BoosterBase
         Tile tile = history[history.Count - 1];
         history.RemoveAt(history.Count - 1);
 
-        if (!Manager.Tray.RemoveTileFromTray(tile))
+        if (!Manager.Tray.RemoveTile(tile))
         {
             onFinished(false);
             return;
         }
 
-        // ReturnTileToBoard frees the tile's tray slot immediately, so it counts as a board tile right after.
         Manager.Arrangement.ReturnTileToBoard(tile, () => onFinished(true));
-
-        Manager.CollectBoardTiles(boardTiles);
-        Manager.Board.RebuildBlocking(boardTiles);
+        Manager.Board.ReturnTile(tile);
     }
 }

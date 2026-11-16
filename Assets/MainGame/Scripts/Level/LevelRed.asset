@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
+  m_Name: LevelRed
+  m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
+  library: {fileID: 0}
+  overrideDefaultTileColor: 0
+  defaultTileColor: {r: 1, g: 1, b: 1, a: 1}
+  targetMaterialSlot: -1
+  overrideDefaultTileMaterial: 0
+  defaultTileMaterial: {fileID: 0}
+  materialTargetSlot: -1
+  overrideDefaultTrayColor: 0
+  defaultTrayColor: {r: 1, g: 1, b: 1, a: 1}
+  overrideDefaultTrayMaterial: 0
+  defaultTrayMaterial: {fileID: 0}
+  facePoolEntries: []
+  tilePoolEntries: []
+  maxDifferentFaces: 0
+  seed: 0
+  tileTypeId: 
+  facePool: 
+  defaultWidth: 6
+  defaultHeight: 8
+  baseLayerHeight: 15
+  defaultLayerShift: 25
+  layers:
+  - width: 6
+    height: 8
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: 15
+    grid: 000000000101000000000101000000000000000000000000000000000000000000000000000000000101000000000101
+  - width: 6
+    height: 8
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: 25
+    grid: 000000000101000000000101000000000000000000000000000000000000000000000101000000000101000000000000
+  - width: 6
+    height: 8
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: 25
+    grid: 000000000000000000000101000000000101000000000101000000000101000000000101000000000101000000000000
+  - width: 6
+    height: 8
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: 25
+    grid: 000000000000000000000001000000000001000000000001000000000001000000000001000000000000000000000000
+  - width: 6
+    height: 8
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: 25
+    grid: 000000000000000000000000000000000001000000000001000000000001000000000001000000000000000000000000

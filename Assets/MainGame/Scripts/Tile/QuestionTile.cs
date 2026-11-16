@@ -1,17 +1,15 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-/// <summary>
-/// Shows a question mark until the player moves it into the tray, then reveals its real face.
-/// </summary>
+/// <summary>Shows a question mark until the tile moves into the tray, then reveals its face.</summary>
 public class QuestionTile : Tile
 {
+    [Header("Face Cover")]
+    [SerializeField] private TileFaceCover faceCover;
+
     [Header("Question Tile")]
-    [Tooltip("Sprite drawn instead of the face while the tile is on the board. Leave empty to hide the image completely.")]
-    [SerializeField] private Sprite questionSprite;
-    [Tooltip("Off = if the Undo booster sends it back, the face stays visible. On = it hides again.")]
-    [SerializeField] private bool hideAgainWhenReturnedToBoard = false;
-    [Tooltip("Fired once when the face is revealed. Hook particles / sounds here.")]
+    [Tooltip("On = the question mark returns if Undo sends the tile back to the board.")]
+    [SerializeField] private bool hideAgainOnUndo = false;
     [SerializeField] private UnityEvent onRevealed;
 
     private bool revealed;
@@ -19,23 +17,22 @@ public class QuestionTile : Tile
     protected override void OnTileInitialized()
     {
         revealed = false;
-        SetFaceCover(questionSprite);
+        faceCover.Capture();
+        faceCover.Cover();
     }
 
     protected override void OnEnteredTray()
     {
         if (revealed) return;
-
         revealed = true;
-        ClearFaceCover();
+        faceCover.Reveal();
         onRevealed?.Invoke();
     }
 
     protected override void OnReturnedToBoard()
     {
-        if (!hideAgainWhenReturnedToBoard || !revealed) return;
-
+        if (!hideAgainOnUndo || !revealed) return;
         revealed = false;
-        SetFaceCover(questionSprite);
+        faceCover.Cover();
     }
 }

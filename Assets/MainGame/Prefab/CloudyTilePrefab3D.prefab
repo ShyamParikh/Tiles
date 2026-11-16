@@ -153,11 +153,13 @@ MonoBehaviour:
   overrideBodyColor: 0
   bodyColor: {r: 0.6784314, g: 0.6784314, b: 0.6784314, a: 1}
   bodyColorSlot: -1
+  colorMode: 0
   tintBodyWhenBlocked: 1
   blockedColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   bodyColorProperty: _BaseColor
-  cloudSprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
-  hideAgainWhenCoveredAgain: 1
+  CoverCount: 0
+  cloud: {fileID: 3662799585550327246}
+  coverAgain: 0
   onRevealed:
     m_PersistentCalls:
       m_Calls: []

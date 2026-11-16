@@ -1,47 +1,44 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-/// <summary>
-/// Hides its face behind a cloud until no tile is covering it any more.
-/// </summary>
+/// <summary>Hides its face behind a cloud until no tile covers it any more.</summary>
 public class CloudyTile : Tile
 {
+    [Header("Face Cover")]
+    [SerializeField] private TileFaceCover faceCover;
+
     [Header("Cloudy Tile")]
-    [Tooltip("Sprite drawn instead of the face while the tile is covered. Leave empty to hide the image completely.")]
-    [SerializeField] private Sprite cloudSprite;
-    [Tooltip("Off = once revealed the face stays visible. On = the cloud comes back if the tile gets covered again (Undo / Shuffle).")]
-    [SerializeField] private bool hideAgainWhenCoveredAgain = false;
-    [Tooltip("Fired once when the cloud lifts. Hook particles / sounds here.")]
+    [Tooltip("Off = once revealed it stays revealed. On = the cloud returns if the tile is covered again (Undo / Shuffle).")]
+    [SerializeField] private bool coverAgain = false;
     [SerializeField] private UnityEvent onRevealed;
 
     private bool revealed;
-    private bool waitingForFirstState;
+    private bool firstUpdate;
 
     protected override void OnTileInitialized()
     {
         revealed = false;
-        waitingForFirstState = true;
-        SetFaceCover(cloudSprite);
+        firstUpdate = true;
+        faceCover.Capture();
+        faceCover.Cover();
     }
 
     protected override void OnBlockedChanged(bool blocked)
     {
-        // The very first update is just the board telling us the starting state, so no reveal effect for it.
-        bool silent = waitingForFirstState;
-        waitingForFirstState = false;
+        bool silent = firstUpdate;   // the first update only reports the starting state
+        firstUpdate = false;
 
-        if (!blocked)
+        if (blocked)
         {
-            if (revealed) return;
-
-            revealed = true;
-            ClearFaceCover();
-            if (!silent) onRevealed?.Invoke();
-        }
-        else if (hideAgainWhenCoveredAgain && revealed)
-        {
+            if (!coverAgain || !revealed) return;
             revealed = false;
-            SetFaceCover(cloudSprite);
+            faceCover.Cover();
+            return;
         }
+
+        if (revealed) return;
+        revealed = true;
+        faceCover.Reveal();
+        if (!silent) onRevealed?.Invoke();
     }
 }

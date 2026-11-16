@@ -38,47 +38,26 @@ public class TileVisualSpawner : MonoBehaviour
 
     [Header("Grid Sizing")]
     [SerializeField] private GridSizingMode sizingMode = GridSizingMode.Manual;
-
     [Header("  ↳ If Manual:")]
     [SerializeField] private Vector2 manualTileSize = new Vector2(1f, 1.3f);
     [SerializeField] private Vector2 manualGap = new Vector2(0.05f, 0.05f);
-
     [Header("  ↳ If Fit To Dimensions:")]
     [SerializeField] private Vector2 totalAreaDimensions = new Vector2(100f, 100f);
-
     [Header("  ↳ If Fit To Box Collider:")]
     [SerializeField] private BoxCollider targetBoundsBox;
 
     [Header("Positioning")]
     [SerializeField] private bool centerBoard = true;
 
-    [Header("Debug")]
-    [SerializeField] private bool enableDebugLogs = true;
-
     private struct TileCell
     {
-        public int x;
-        public int y;
-        public int layer;
-
-        public TileCell(int x, int y, int layer)
-        {
-            this.x = x;
-            this.y = y;
-            this.layer = layer;
-        }
+        public int x, y, layer;
     }
 
-    private struct SpawnAssignment
+    private struct Assignment
     {
         public int faceId;
-        public string tileTypeId;
-
-        public SpawnAssignment(int faceId, string tileTypeId)
-        {
-            this.faceId = faceId;
-            this.tileTypeId = tileTypeId;
-        }
+        public string typeId;
     }
 
     private readonly List<Tile> spawnedTiles = new List<Tile>();
@@ -86,7 +65,6 @@ public class TileVisualSpawner : MonoBehaviour
     public IReadOnlyList<Tile> SpawnedTiles => spawnedTiles;
     public TileBoardPlane BoardPlane => boardPlane;
     public bool InvertStackingDirection => invertStackingDirection;
-    public Transform BoardRootTransform => boardRoot != null ? boardRoot : transform;
 
     private void Start()
     {
@@ -103,27 +81,68 @@ public class TileVisualSpawner : MonoBehaviour
     {
         Clear();
 
-        if (level == null)
+        if (level == null || level.library == null)
         {
-            Debug.LogError("[SPAWNER] No level asset given.");
+            Debug.LogError("[SPAWNER] The level or its Tile Library is missing.", level);
             return;
         }
+
         level.MigrateLegacyData();
         levelAsset = level;
-
         TileLibrary library = level.library;
-        if (library == null)
+
+        int seed = level.seed != 0 ? level.seed : StableHash(level.name);
+        System.Random contentRng = new System.Random(seed);
+        System.Random placementRng = new System.Random(randomizePlacementEveryLoad ? Guid.NewGuid().GetHashCode() : seed + 1);
+
+        List<TileCell> cells = CollectCells(level);
+        int usable = cells.Count / TileRules.SetSize * TileRules.SetSize;
+        if (usable != cells.Count)
+            Debug.LogWarning($"[SPAWNER] Level '{level.name}' has {cells.Count} tiles, not a multiple of {TileRules.SetSize}. The last {cells.Count - usable} are left out.", level);
+        if (usable == 0) return;
+
+        List<Assignment> assignments = BuildAssignments(level, library, usable, contentRng, placementRng);
+        if (assignments == null) return;
+
+        Vector2Int max = MaxLayerSize(level);
+        Vector2 step = StepSize(max);
+        Vector2 start = centerBoard ? new Vector2(step.x * (1 - max.x) / 2f, step.y * (1 - max.y) / 2f) : Vector2.zero;
+        Transform parent = boardRoot != null ? boardRoot : transform;
+        Quaternion rotation = Quaternion.Euler(tileRotation);
+        float stackSign = invertStackingDirection ? -1f : 1f;
+
+        for (int i = 0; i < assignments.Count; i++)
         {
-            Debug.LogError($"[SPAWNER] Level '{level.name}' has no Tile Library assigned.", level);
-            return;
+            TileCell cell = cells[i];
+            Assignment assignment = assignments[i];
+            Tile prefab = library.GetTilePrefab(assignment.typeId);
+            if (prefab == null)
+            {
+                Debug.LogError($"[SPAWNER] No tile prefab for type '{assignment.typeId}'.", level);
+                continue;
+            }
+
+            Vector2 offset = level.layers[cell.layer].offset;
+            Vector2 cellPosition = new Vector2(cell.x + offset.x, cell.y + offset.y);
+            float u = start.x + cellPosition.x * step.x;
+            float v = start.y + cellPosition.y * step.y;
+            float stack = level.GetLayerStackPosition(cell.layer) * stackSign;
+
+            Tile tile = Instantiate(prefab, parent);
+            tile.transform.localPosition = boardPlane == TileBoardPlane.XZ_Flat ? new Vector3(u, stack, v) : new Vector3(u, -v, stack);
+            tile.transform.localRotation = rotation;
+            tile.name = $"Tile_{cell.x}_{cell.y}_L{cell.layer}_F{assignment.faceId}";
+            tile.Init(assignment.faceId, library.GetFaceSprite(assignment.faceId), cell.layer, cellPosition);
+            tile.SetLevelLooks(level.ResolveBoardLook(assignment.faceId, assignment.typeId), level.ResolveTrayLook(assignment.faceId, assignment.typeId));
+
+            spawnedTiles.Add(tile);
         }
 
-        int contentSeed = level.seed != 0 ? level.seed : StableHash(level.name);
-        System.Random contentRng = new System.Random(contentSeed);
-        System.Random placementRng = randomizePlacementEveryLoad
-            ? new System.Random(Guid.NewGuid().GetHashCode())
-            : new System.Random(contentSeed + 1);
+        if (Application.isPlaying) boardGenerated?.Invoke(new List<Tile>(spawnedTiles));
+    }
 
+    private static List<TileCell> CollectCells(TileLevelData level)
+    {
         List<TileCell> cells = new List<TileCell>();
         for (int z = 0; z < level.layers.Count; z++)
         {
@@ -132,381 +151,196 @@ public class TileVisualSpawner : MonoBehaviour
             {
                 for (int x = 0; x < layer.width; x++)
                 {
-                    if (layer.GetCell(x, y)) cells.Add(new TileCell(x, y, z));
+                    if (layer.GetCell(x, y)) cells.Add(new TileCell { x = x, y = y, layer = z });
                 }
             }
         }
-
-        int perSet = TileMergeData.TilesPerMerge;
-        int usable = (cells.Count / perSet) * perSet;
-        if (usable != cells.Count)
-        {
-            Debug.LogWarning($"[SPAWNER] Level '{level.name}' has {cells.Count} tiles, which is not a multiple of {perSet}. The last {cells.Count - usable} tile(s) are left out.", level);
-        }
-        if (usable == 0)
-        {
-            Debug.LogWarning($"[SPAWNER] Level '{level.name}' has 0 usable tiles to spawn.", level);
-            return;
-        }
-
-        List<SpawnAssignment> assignments = BuildSpawnAssignments(level, library, usable, contentRng, placementRng);
-        if (assignments == null || assignments.Count == 0) return;
-
-        int spawnCount = Mathf.Min(usable, assignments.Count);
-
-        Transform parent = boardRoot != null ? boardRoot : transform;
-        Quaternion customRotation = Quaternion.Euler(tileRotation);
-
-        int maxW = 1;
-        int maxH = 1;
-        foreach (var layer in level.layers)
-        {
-            maxW = Mathf.Max(maxW, layer.width);
-            maxH = Mathf.Max(maxH, layer.height);
-        }
-
-        float stepX = 1f;
-        float stepY = 1f;
-
-        if (sizingMode == GridSizingMode.Manual)
-        {
-            stepX = manualTileSize.x + manualGap.x;
-            stepY = manualTileSize.y + manualGap.y;
-        }
-        else if (sizingMode == GridSizingMode.FitToDimensions)
-        {
-            stepX = totalAreaDimensions.x / maxW;
-            stepY = totalAreaDimensions.y / maxH;
-        }
-        else if (sizingMode == GridSizingMode.FitToBoxCollider && targetBoundsBox != null)
-        {
-            float sizeU = targetBoundsBox.size.x * targetBoundsBox.transform.lossyScale.x;
-            float sizeV = boardPlane == TileBoardPlane.XZ_Flat ?
-                          targetBoundsBox.size.z * targetBoundsBox.transform.lossyScale.z :
-                          targetBoundsBox.size.y * targetBoundsBox.transform.lossyScale.y;
-
-            stepX = sizeU / maxW;
-            stepY = sizeV / maxH;
-
-            if (targetBoundsBox.enabled)
-            {
-                targetBoundsBox.enabled = false;
-                if (enableDebugLogs) Debug.Log("[SPAWNER] Disabled targetBoundsBox collider after measuring so it cannot intercept tile clicks.");
-            }
-        }
-
-        float startU = 0f;
-        float startV = 0f;
-        if (centerBoard)
-        {
-            float boardWidth = maxW * stepX;
-            float boardHeight = maxH * stepY;
-
-            startU = -(boardWidth / 2f) + (stepX / 2f);
-            startV = -(boardHeight / 2f) + (stepY / 2f);
-        }
-
-        float stackSign = invertStackingDirection ? -1f : 1f;
-
-        float[] layerHeights = new float[level.layers.Count];
-        for (int i = 0; i < layerHeights.Length; i++)
-            layerHeights[i] = level.GetLayerStackPosition(i);
-
-        for (int i = 0; i < spawnCount; i++)
-        {
-            TileCell cell = cells[i];
-            TileLayer layer = level.layers[cell.layer];
-            SpawnAssignment assignment = assignments[i];
-
-            Tile prefab = library.GetTilePrefab(assignment.tileTypeId);
-            if (prefab == null)
-            {
-                Debug.LogError($"[SPAWNER] Could not resolve tile prefab for ID '{assignment.tileTypeId}'.", level);
-                continue;
-            }
-
-            float cellU = cell.x + layer.offset.x;
-            float cellV = cell.y + layer.offset.y;
-
-            float posU = startU + (cellU * stepX);
-            float posV = startV + (cellV * stepY);
-            float posStack = layerHeights[cell.layer] * stackSign;
-
-            Vector3 spawnPos = boardPlane == TileBoardPlane.XZ_Flat
-                ? new Vector3(posU, posStack, posV)
-                : new Vector3(posU, -posV, posStack);
-
-            Tile tile = Instantiate(prefab, parent);
-            tile.transform.localPosition = spawnPos;
-            tile.transform.localRotation = customRotation;
-            tile.name = $"Tile_{cell.x}_{cell.y}_L{cell.layer}_F{assignment.faceId}";
-
-            library.TryGetFaceSprite(assignment.faceId, out Sprite faceSprite);
-            tile.Init(assignment.faceId, faceSprite, cell.layer, new Vector2(cellU, cellV));
-
-            ApplyLevelLook(tile, level, assignment);
-
-            spawnedTiles.Add(tile);
-        }
-
-        if (enableDebugLogs && spawnedTiles.Count > 0)
-        {
-            Tile sample = spawnedTiles[0];
-            int colLayer = sample.TileCollider != null ? sample.TileCollider.gameObject.layer : sample.gameObject.layer;
-            Debug.Log($"[SPAWNER] Spawned {spawnedTiles.Count} tiles | Plane: {boardPlane} | Inverted: {invertStackingDirection} | Collider Layer: {colLayer} ('{LayerMask.LayerToName(colLayer)}')");
-        }
-
-        if (Application.isPlaying)
-            boardGenerated?.Invoke(new List<Tile>(spawnedTiles));
+        return cells;
     }
 
-    /// <summary>
-    /// Applies the level's material and color overrides (Face > Tile Type > Level Default).
-    /// If the level does not override something, the tile keeps its prefab's own look.
-    /// </summary>
-    private void ApplyLevelLook(Tile tile, TileLevelData level, SpawnAssignment assignment)
+    private static Vector2Int MaxLayerSize(TileLevelData level)
     {
-        // Material first, because replacing the material re-reads the tile's base colors.
-        if (level.TryGetTileMaterial(assignment.faceId, assignment.tileTypeId, out Material material))
-            tile.SetBodyMaterial(material, level.materialTargetSlot);
-
-        if (level.TryGetTileColor(assignment.faceId, assignment.tileTypeId, out Color color))
-            tile.SetCustomColor(color, level.targetMaterialSlot);
+        Vector2Int max = Vector2Int.one;
+        foreach (TileLayer layer in level.layers)
+        {
+            max.x = Mathf.Max(max.x, layer.width);
+            max.y = Mathf.Max(max.y, layer.height);
+        }
+        return max;
     }
 
-    private List<SpawnAssignment> BuildSpawnAssignments(
-        TileLevelData level,
-        TileLibrary library,
-        int totalUsableTiles,
-        System.Random contentRng,
-        System.Random placementRng)
+    private Vector2 StepSize(Vector2Int max)
     {
-        int perSet = TileMergeData.TilesPerMerge;
+        if (sizingMode == GridSizingMode.Manual) return manualTileSize + manualGap;
+        if (sizingMode == GridSizingMode.FitToDimensions) return new Vector2(totalAreaDimensions.x / max.x, totalAreaDimensions.y / max.y);
+        if (targetBoundsBox == null) return Vector2.one;
 
-        // 1. Collect valid face pool entries (or fallback to all library faces if empty)
-        List<FacePoolEntry> validFaceEntries = new List<FacePoolEntry>();
-        Dictionary<int, string> lockedTileByFace = new Dictionary<int, string>();
+        Vector3 size = Vector3.Scale(targetBoundsBox.size, targetBoundsBox.transform.lossyScale);
+        targetBoundsBox.enabled = false;   // measured; it must not intercept tile clicks
+        return new Vector2(size.x / max.x, (boardPlane == TileBoardPlane.XZ_Flat ? size.z : size.y) / max.y);
+    }
 
-        if (level.facePoolEntries != null && level.facePoolEntries.Count > 0)
+    // ---------------- Face and tile type assignment ----------------
+
+    private static List<Assignment> BuildAssignments(TileLevelData level, TileLibrary library, int total, System.Random contentRng, System.Random placementRng)
+    {
+        List<int> faces = BuildFaceList(level, library, total, contentRng);
+        string[] types = faces == null ? null : AssignTypes(level, library, faces, contentRng, placementRng);
+        if (types == null) return null;
+
+        List<Assignment> result = new List<Assignment>(faces.Count);
+        for (int i = 0; i < faces.Count; i++) result.Add(new Assignment { faceId = faces[i], typeId = types[i] });
+
+        TileRules.Shuffle(result, placementRng);
+        return result;
+    }
+
+    /// <summary>Fixed face counts first, then the rest in sets of 3 from the auto faces.</summary>
+    private static List<int> BuildFaceList(TileLevelData level, TileLibrary library, int total, System.Random rng)
+    {
+        List<FacePoolEntry> entries = new List<FacePoolEntry>();
+        foreach (FacePoolEntry entry in level.facePoolEntries)
         {
-            foreach (FacePoolEntry entry in level.facePoolEntries)
-            {
-                if (entry == null || !library.TryGetFaceSprite(entry.faceId, out _)) continue;
-                validFaceEntries.Add(entry);
-                if (!string.IsNullOrEmpty(entry.lockedTileTypeId))
-                    lockedTileByFace[entry.faceId] = entry.lockedTileTypeId;
-            }
+            if (entry != null && library.GetFaceSprite(entry.faceId) != null) entries.Add(entry);
         }
-        else
+        if (level.facePoolEntries.Count == 0)
         {
-            foreach (int id in library.GetAllFaceIds())
-                validFaceEntries.Add(new FacePoolEntry { faceId = id, tileCount = 0, lockedTileTypeId = "" });
+            foreach (int id in library.GetAllFaceIds()) entries.Add(new FacePoolEntry { faceId = id });
         }
-
-        if (validFaceEntries.Count == 0)
+        if (entries.Count == 0)
         {
             Debug.LogError($"[SPAWNER] No valid faces with sprites found for level '{level.name}'.", level);
             return null;
         }
 
-        // 2. Allocate exact fixed face counts first, then fill remaining sets from Auto (0) faces
-        List<int> faceList = new List<int>(totalUsableTiles);
-        List<int> autoFaceIds = new List<int>();
-
-        foreach (FacePoolEntry entry in validFaceEntries)
+        List<int> faces = new List<int>(total);
+        List<int> autoIds = new List<int>();
+        foreach (FacePoolEntry entry in entries)
         {
-            if (entry.tileCount > 0)
+            if (entry.tileCount <= 0)
             {
-                int usableForFace = (entry.tileCount / perSet) * perSet;
-                if (usableForFace != entry.tileCount)
-                {
-                    Debug.LogWarning($"[SPAWNER] Face {entry.faceId} count ({entry.tileCount}) is not a multiple of {perSet}; rounded to {usableForFace}.", level);
-                }
-
-                int remainingCapacity = totalUsableTiles - faceList.Count;
-                int toAdd = Mathf.Min(usableForFace, remainingCapacity);
-
-                for (int k = 0; k < toAdd; k++)
-                    faceList.Add(entry.faceId);
-
-                if (toAdd < usableForFace)
-                {
-                    Debug.LogWarning($"[SPAWNER] Fixed face counts exceeded board capacity ({totalUsableTiles}). Trimmed Face {entry.faceId}.", level);
-                }
+                autoIds.Add(entry.faceId);
+                continue;
             }
-            else
-            {
-                autoFaceIds.Add(entry.faceId);
-            }
+
+            int count = Mathf.Min(entry.tileCount / TileRules.SetSize * TileRules.SetSize, total - faces.Count);
+            for (int k = 0; k < count; k++) faces.Add(entry.faceId);
         }
 
-        int remainingTilesForFaces = totalUsableTiles - faceList.Count;
-        if (remainingTilesForFaces > 0)
+        int sets = (total - faces.Count) / TileRules.SetSize;
+        if (sets == 0) return faces;
+
+        if (autoIds.Count == 0)
         {
-            // If no faces were set to Auto (0), fall back to all pool faces so the board fills completely
-            if (autoFaceIds.Count == 0)
-            {
-                foreach (FacePoolEntry entry in validFaceEntries)
-                    autoFaceIds.Add(entry.faceId);
-            }
-
-            if (level.maxDifferentFaces > 0 && level.maxDifferentFaces < autoFaceIds.Count)
-            {
-                Shuffle(autoFaceIds, contentRng);
-                autoFaceIds.RemoveRange(level.maxDifferentFaces, autoFaceIds.Count - level.maxDifferentFaces);
-            }
-
-            int remainingSets = remainingTilesForFaces / perSet;
-            List<int> bag = new List<int>();
-
-            for (int s = 0; s < remainingSets; s++)
-            {
-                if (bag.Count == 0)
-                {
-                    bag.AddRange(autoFaceIds);
-                    Shuffle(bag, contentRng);
-                }
-
-                int pickedFace = bag[bag.Count - 1];
-                bag.RemoveAt(bag.Count - 1);
-
-                for (int k = 0; k < perSet; k++)
-                    faceList.Add(pickedFace);
-            }
+            foreach (FacePoolEntry entry in entries) autoIds.Add(entry.faceId);
+        }
+        if (level.maxDifferentFaces > 0 && level.maxDifferentFaces < autoIds.Count)
+        {
+            TileRules.Shuffle(autoIds, rng);
+            autoIds.RemoveRange(level.maxDifferentFaces, autoIds.Count - level.maxDifferentFaces);
         }
 
-        // 3. Assign 3D Tile Prefab IDs (respecting Face->Tile locks first, then Tile Pool fixed counts, then Auto)
-        List<string> allLibraryTypeIds = library.GetTileTypeIds();
-        if (allLibraryTypeIds.Count == 0)
+        List<int> bag = new List<int>();
+        for (int s = 0; s < sets; s++)
+        {
+            int face = Draw(bag, autoIds, rng);
+            for (int k = 0; k < TileRules.SetSize; k++) faces.Add(face);
+        }
+        return faces;
+    }
+
+    /// <summary>Face locks first, then fixed tile-type counts, then the auto tile types.</summary>
+    private static string[] AssignTypes(TileLevelData level, TileLibrary library, List<int> faces, System.Random contentRng, System.Random placementRng)
+    {
+        List<string> libraryIds = library.GetTileTypeIds();
+        if (libraryIds.Count == 0)
         {
             Debug.LogError($"[SPAWNER] Tile Library '{library.name}' has no tile prefabs!", library);
             return null;
         }
 
-        List<TilePoolEntry> validTileEntries = new List<TilePoolEntry>();
-        if (level.tilePoolEntries != null && level.tilePoolEntries.Count > 0)
+        List<TilePoolEntry> pool = new List<TilePoolEntry>();
+        foreach (TilePoolEntry entry in level.tilePoolEntries)
         {
-            foreach (TilePoolEntry entry in level.tilePoolEntries)
-            {
-                if (entry != null && !string.IsNullOrEmpty(entry.tileTypeId) && allLibraryTypeIds.Contains(entry.tileTypeId))
-                    validTileEntries.Add(entry);
-            }
+            if (entry != null && libraryIds.Contains(entry.tileTypeId)) pool.Add(entry);
         }
-        if (validTileEntries.Count == 0)
-        {
-            validTileEntries.Add(new TilePoolEntry { tileTypeId = allLibraryTypeIds[0], tileCount = 0 });
-        }
+        if (pool.Count == 0) pool.Add(new TilePoolEntry { tileTypeId = libraryIds[0] });
 
-        string[] assignedTileTypes = new string[faceList.Count];
-        Dictionary<string, int> consumedCounts = new Dictionary<string, int>();
-        List<int> unlockedIndices = new List<int>();
-
-        // Pass A: Apply locked tile types for specific faces (e.g., Coins -> Gold)
-        for (int i = 0; i < faceList.Count; i++)
+        string[] types = new string[faces.Count];
+        List<int> free = new List<int>();
+        for (int i = 0; i < faces.Count; i++)
         {
-            int fId = faceList[i];
-            if (lockedTileByFace.TryGetValue(fId, out string lockedType) && allLibraryTypeIds.Contains(lockedType))
-            {
-                assignedTileTypes[i] = lockedType;
-                consumedCounts.TryGetValue(lockedType, out int used);
-                consumedCounts[lockedType] = used + 1;
-            }
-            else
-            {
-                unlockedIndices.Add(i);
-            }
+            FacePoolEntry face = level.GetFaceEntry(faces[i]);
+            if (face != null && libraryIds.Contains(face.lockedTileTypeId)) types[i] = face.lockedTileTypeId;
+            else free.Add(i);
         }
 
-        // Shuffle unlocked slots so fixed and auto tile types distribute randomly across the board
-        Shuffle(unlockedIndices, placementRng);
+        TileRules.Shuffle(free, placementRng);
         int cursor = 0;
+        List<string> autoTypes = new List<string>();
 
-        // Pass B: Fulfill remaining fixed counts from Tile Pool entries
-        List<string> autoTileTypeIds = new List<string>();
-        foreach (TilePoolEntry entry in validTileEntries)
+        foreach (TilePoolEntry entry in pool)
         {
-            if (entry.tileCount > 0)
+            if (entry.tileCount <= 0)
             {
-                consumedCounts.TryGetValue(entry.tileTypeId, out int alreadyUsedByLocks);
-                int remainingQuota = Mathf.Max(0, entry.tileCount - alreadyUsedByLocks);
+                autoTypes.Add(entry.tileTypeId);
+                continue;
+            }
 
-                for (int k = 0; k < remainingQuota && cursor < unlockedIndices.Count; k++)
-                {
-                    assignedTileTypes[unlockedIndices[cursor++]] = entry.tileTypeId;
-                }
-            }
-            else
-            {
-                autoTileTypeIds.Add(entry.tileTypeId);
-            }
+            int quota = entry.tileCount - CountOf(types, entry.tileTypeId);
+            for (int k = 0; k < quota && cursor < free.Count; k++) types[free[cursor++]] = entry.tileTypeId;
         }
 
-        // Pass C: Fill any remaining unlocked slots with Auto (0) tile types
-        if (cursor < unlockedIndices.Count)
+        if (autoTypes.Count == 0)
         {
-            if (autoTileTypeIds.Count == 0)
-            {
-                foreach (TilePoolEntry entry in validTileEntries)
-                    autoTileTypeIds.Add(entry.tileTypeId);
-            }
-
-            List<string> tileBag = new List<string>();
-            while (cursor < unlockedIndices.Count)
-            {
-                if (tileBag.Count == 0)
-                {
-                    tileBag.AddRange(autoTileTypeIds);
-                    Shuffle(tileBag, contentRng);
-                }
-
-                string pickedType = tileBag[tileBag.Count - 1];
-                tileBag.RemoveAt(tileBag.Count - 1);
-                assignedTileTypes[unlockedIndices[cursor++]] = pickedType;
-            }
+            foreach (TilePoolEntry entry in pool) autoTypes.Add(entry.tileTypeId);
         }
 
-        // 4. Combine into final assignments and shuffle spatial placement across the board
-        List<SpawnAssignment> result = new List<SpawnAssignment>(faceList.Count);
-        for (int i = 0; i < faceList.Count; i++)
-        {
-            result.Add(new SpawnAssignment(faceList[i], assignedTileTypes[i]));
-        }
-
-        Shuffle(result, placementRng);
-        return result;
+        List<string> bag = new List<string>();
+        while (cursor < free.Count) types[free[cursor++]] = Draw(bag, autoTypes, contentRng);
+        return types;
     }
 
-    private static void Shuffle<T>(List<T> list, System.Random rng)
+    private static int CountOf(string[] types, string id)
     {
-        for (int i = list.Count - 1; i > 0; i--)
+        int count = 0;
+        foreach (string type in types)
         {
-            int j = rng.Next(i + 1);
-            T temp = list[i];
-            list[i] = list[j];
-            list[j] = temp;
+            if (type == id) count++;
         }
+        return count;
+    }
+
+    /// <summary>Takes the next item from a shuffled bag, refilling the bag from the source when empty.</summary>
+    private static T Draw<T>(List<T> bag, List<T> source, System.Random rng)
+    {
+        if (bag.Count == 0)
+        {
+            bag.AddRange(source);
+            TileRules.Shuffle(bag, rng);
+        }
+
+        T item = bag[bag.Count - 1];
+        bag.RemoveAt(bag.Count - 1);
+        return item;
     }
 
     private static int StableHash(string text)
     {
         int hash = 17;
         if (string.IsNullOrEmpty(text)) return hash;
-
-        for (int i = 0; i < text.Length; i++)
-            hash = unchecked(hash * 31 + text[i]);
+        for (int i = 0; i < text.Length; i++) hash = unchecked(hash * 31 + text[i]);
         return hash;
     }
 
     [ContextMenu("Clear Board")]
     public void Clear()
     {
-        for (int i = spawnedTiles.Count - 1; i >= 0; i--)
+        foreach (Tile tile in spawnedTiles)
         {
-            if (spawnedTiles[i] != null)
-            {
-                if (Application.isPlaying) Destroy(spawnedTiles[i].gameObject);
-                else DestroyImmediate(spawnedTiles[i].gameObject);
-            }
+            if (tile == null) continue;
+            if (Application.isPlaying) Destroy(tile.gameObject);
+            else DestroyImmediate(tile.gameObject);
         }
         spawnedTiles.Clear();
     }

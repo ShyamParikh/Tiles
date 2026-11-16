@@ -2,89 +2,79 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>Shared settings of a face or tile-type entry in a level pool.</summary>
 [Serializable]
-public class FacePoolEntry
+public class PoolEntry
 {
-    public int faceId;
-
-    [Tooltip("Exact number of tiles for this face (must be a multiple of 3, e.g. 3, 6, 9). Set to 0 to fill remaining spots automatically.")]
+    [Tooltip("Exact tile count (a multiple of 3 for faces). 0 = fill the remaining spots automatically.")]
     public int tileCount = 0;
 
-    [Tooltip("Optional: Force this face to always use a specific Tile Type ID (e.g. 'Gold'). Leave empty to use the Tile Pool.")]
-    public string lockedTileTypeId = "";
-
-    [Tooltip("Optional: Override the tile body color specifically for tiles with this face.")]
+    [Header("Board look")]
     public bool overrideColor = false;
     public Color tileColor = Color.white;
-
-    [Tooltip("Optional: Override the tile body material specifically for tiles with this face.")]
     public bool overrideMaterial = false;
     public Material tileMaterial;
+
+    [Header("Look in the tray (when the tile reaches a tray slot)")]
+    public bool trayOverrideColor = false;
+    public Color trayColor = Color.white;
+    public bool trayOverrideMaterial = false;
+    public Material trayMaterial;
 }
 
 [Serializable]
-public class TilePoolEntry
+public class FacePoolEntry : PoolEntry
+{
+    public int faceId;
+    [Tooltip("Optional: force this face to always use one Tile Type ID. Empty = use the Tile Pool.")]
+    public string lockedTileTypeId = "";
+}
+
+[Serializable]
+public class TilePoolEntry : PoolEntry
 {
     public string tileTypeId;
-
-    [Tooltip("Exact number of tiles that will use this 3D tile prefab. Set to 0 to fill remaining spots automatically.")]
-    public int tileCount = 0;
-
-    [Tooltip("Optional: Override the tile body color for this tile type in this level.")]
-    public bool overrideColor = false;
-    public Color tileColor = Color.white;
-
-    [Tooltip("Optional: Override the tile body material for this tile type in this level.")]
-    public bool overrideMaterial = false;
-    public Material tileMaterial;
 }
 
 [CreateAssetMenu(fileName = "NewVisualLevel", menuName = "Tile/Visual Level Data")]
 public class TileLevelData : ScriptableObject
 {
-    [Header("Tile Setup")]
-    [Tooltip("Central store of tile prefabs and face sprites.")]
     public TileLibrary library;
 
-    [Header("Tile Colors")]
-    [Tooltip("Optional: Override the base color of all tiles in this level (unless overridden per Tile Type or Face).")]
+    [Tooltip("Optional: override the body color of every tile in this level (unless a Face or Tile Type overrides it).")]
     public bool overrideDefaultTileColor = false;
     public Color defaultTileColor = Color.white;
-    [Tooltip("-1 = apply color to ALL material slots on the mesh. 0 = Element 0 only, 1 = Element 1 only, etc.")]
+    [Tooltip("-1 = tint ALL material slots. 0 = Element 0 only, 1 = Element 1 only, etc.")]
     public int targetMaterialSlot = -1;
 
-    [Header("Tile Materials")]
-    [Tooltip("Optional: Replace the body material of all tiles in this level (unless overridden per Tile Type or Face).")]
+    [Tooltip("Optional: replace the body material of every tile in this level (unless a Face or Tile Type overrides it).")]
     public bool overrideDefaultTileMaterial = false;
     public Material defaultTileMaterial;
-    [Tooltip("-1 = replace ALL material slots on the body mesh. 0 = Element 0 only, 1 = Element 1 only, etc.")]
+    [Tooltip("-1 = replace ALL material slots. 0 = Element 0 only, 1 = Element 1 only, etc.")]
     public int materialTargetSlot = -1;
 
-    [Tooltip("Faces enabled for this level, with optional exact tile counts, locked tile types, and colors.")]
-    public List<FacePoolEntry> facePoolEntries = new List<FacePoolEntry>();
+    [Tooltip("Optional: every tile of this level changes to this color when it reaches a tray slot (unless a Face or Tile Type overrides it).")]
+    public bool overrideDefaultTrayColor = false;
+    public Color defaultTrayColor = Color.white;
+    [Tooltip("Optional: every tile of this level changes to this material when it reaches a tray slot (unless a Face or Tile Type overrides it).")]
+    public bool overrideDefaultTrayMaterial = false;
+    public Material defaultTrayMaterial;
 
-    [Tooltip("3D tile prefabs enabled for this level, with optional exact tile counts and colors.")]
+    public List<FacePoolEntry> facePoolEntries = new List<FacePoolEntry>();
     public List<TilePoolEntry> tilePoolEntries = new List<TilePoolEntry>();
 
-    [Tooltip("How many different faces to use when Auto-picking (0 = use the whole pool).")]
+    [Tooltip("How many different faces to use when auto-picking (0 = the whole pool).")]
     public int maxDifferentFaces = 0;
-
     [Tooltip("Decides face selection and placement when Randomize Placement Every Load is off. 0 = automatic.")]
     public int seed = 0;
 
     [HideInInspector] public string tileTypeId = "";
     [HideInInspector] public List<int> facePool = new List<int>();
 
-    [Header("Grid")]
     public int defaultWidth = 10;
     public int defaultHeight = 10;
-
-    [Tooltip("Height of the first (base) layer, unless that layer overrides it.")]
     public float baseLayerHeight = 0f;
-
-    [Tooltip("Distance between a layer and the one below it, unless that layer overrides it.")]
     public float defaultLayerShift = 0.3f;
-
     public List<TileLayer> layers = new List<TileLayer>();
 
     private void OnValidate()
@@ -92,133 +82,95 @@ public class TileLevelData : ScriptableObject
         MigrateLegacyData();
     }
 
+    /// <summary>Converts the old single tile type / face id list into pool entries.</summary>
     public void MigrateLegacyData()
     {
         bool migrated = false;
 
-        if (facePool != null && facePool.Count > 0 && (facePoolEntries == null || facePoolEntries.Count == 0))
+        if (facePool.Count > 0 && facePoolEntries.Count == 0)
         {
-            if (facePoolEntries == null) facePoolEntries = new List<FacePoolEntry>();
-            foreach (int id in facePool)
-            {
-                if (!HasFaceEntry(id))
-                    facePoolEntries.Add(new FacePoolEntry { faceId = id, tileCount = 0, lockedTileTypeId = "" });
-            }
+            foreach (int id in facePool) facePoolEntries.Add(new FacePoolEntry { faceId = id });
             facePool.Clear();
             migrated = true;
         }
 
-        if (!string.IsNullOrEmpty(tileTypeId) && (tilePoolEntries == null || tilePoolEntries.Count == 0))
+        if (!string.IsNullOrEmpty(tileTypeId) && tilePoolEntries.Count == 0)
         {
-            if (tilePoolEntries == null) tilePoolEntries = new List<TilePoolEntry>();
-            tilePoolEntries.Add(new TilePoolEntry { tileTypeId = tileTypeId, tileCount = 0 });
+            tilePoolEntries.Add(new TilePoolEntry { tileTypeId = tileTypeId });
             tileTypeId = "";
             migrated = true;
         }
 
 #if UNITY_EDITOR
-        if (migrated)
-            UnityEditor.EditorUtility.SetDirty(this);
+        if (migrated) UnityEditor.EditorUtility.SetDirty(this);
 #endif
-    }
-
-    public bool HasFaceEntry(int id)
-    {
-        if (facePoolEntries == null) return false;
-        for (int i = 0; i < facePoolEntries.Count; i++)
-        {
-            if (facePoolEntries[i] != null && facePoolEntries[i].faceId == id) return true;
-        }
-        return false;
     }
 
     public FacePoolEntry GetFaceEntry(int id)
     {
-        if (facePoolEntries == null) return null;
-        for (int i = 0; i < facePoolEntries.Count; i++)
+        foreach (FacePoolEntry entry in facePoolEntries)
         {
-            if (facePoolEntries[i] != null && facePoolEntries[i].faceId == id) return facePoolEntries[i];
+            if (entry != null && entry.faceId == id) return entry;
         }
         return null;
-    }
-
-    public bool HasTileEntry(string id)
-    {
-        if (tilePoolEntries == null) return false;
-        for (int i = 0; i < tilePoolEntries.Count; i++)
-        {
-            if (tilePoolEntries[i] != null && tilePoolEntries[i].tileTypeId == id) return true;
-        }
-        return false;
     }
 
     public TilePoolEntry GetTileEntry(string id)
     {
-        if (tilePoolEntries == null) return null;
-        for (int i = 0; i < tilePoolEntries.Count; i++)
+        foreach (TilePoolEntry entry in tilePoolEntries)
         {
-            if (tilePoolEntries[i] != null && tilePoolEntries[i].tileTypeId == id) return tilePoolEntries[i];
+            if (entry != null && entry.tileTypeId == id) return entry;
         }
         return null;
     }
 
-    // ---------------- Look resolution (Face > Tile Type > Level Default) ----------------
-
-    /// <summary>Returns true if this level wants to override the body color of a tile with this face / tile type.</summary>
-    public bool TryGetTileColor(int faceId, string tileTypeId, out Color color)
+    /// <summary>The look a tile has on the board. Priority: Face > Tile Type > Level default.</summary>
+    public TileLookSpec ResolveBoardLook(int faceId, string typeId)
     {
         FacePoolEntry face = GetFaceEntry(faceId);
-        if (face != null && face.overrideColor)
-        {
-            color = face.tileColor;
-            return true;
-        }
+        TilePoolEntry type = GetTileEntry(typeId);
+        TileLookSpec spec = new TileLookSpec { materialSlot = materialTargetSlot, colorSlot = targetMaterialSlot };
 
-        TilePoolEntry tile = GetTileEntry(tileTypeId);
-        if (tile != null && tile.overrideColor)
-        {
-            color = tile.tileColor;
-            return true;
-        }
+        PoolEntry material = First(face, type, e => e.overrideMaterial && e.tileMaterial != null);
+        if (material != null) spec.material = material.tileMaterial;
+        else if (overrideDefaultTileMaterial) spec.material = defaultTileMaterial;
 
-        if (overrideDefaultTileColor)
-        {
-            color = defaultTileColor;
-            return true;
-        }
+        PoolEntry color = First(face, type, e => e.overrideColor);
+        if (color != null) SetColor(ref spec, color.tileColor);
+        else if (overrideDefaultTileColor) SetColor(ref spec, defaultTileColor);
 
-        color = Color.white;
-        return false;
+        return spec;
     }
 
-    /// <summary>Returns true if this level wants to replace the body material of a tile with this face / tile type.</summary>
-    public bool TryGetTileMaterial(int faceId, string tileTypeId, out Material material)
+    /// <summary>The look a tile changes to when it reaches a tray slot. An empty spec means no change.</summary>
+    public TileLookSpec ResolveTrayLook(int faceId, string typeId)
     {
         FacePoolEntry face = GetFaceEntry(faceId);
-        if (face != null && face.overrideMaterial && face.tileMaterial != null)
-        {
-            material = face.tileMaterial;
-            return true;
-        }
+        TilePoolEntry type = GetTileEntry(typeId);
+        TileLookSpec spec = new TileLookSpec { materialSlot = materialTargetSlot, colorSlot = targetMaterialSlot };
 
-        TilePoolEntry tile = GetTileEntry(tileTypeId);
-        if (tile != null && tile.overrideMaterial && tile.tileMaterial != null)
-        {
-            material = tile.tileMaterial;
-            return true;
-        }
+        PoolEntry material = First(face, type, e => e.trayOverrideMaterial && e.trayMaterial != null);
+        if (material != null) spec.material = material.trayMaterial;
+        else if (overrideDefaultTrayMaterial) spec.material = defaultTrayMaterial;
 
-        if (overrideDefaultTileMaterial && defaultTileMaterial != null)
-        {
-            material = defaultTileMaterial;
-            return true;
-        }
+        PoolEntry color = First(face, type, e => e.trayOverrideColor);
+        if (color != null) SetColor(ref spec, color.trayColor);
+        else if (overrideDefaultTrayColor) SetColor(ref spec, defaultTrayColor);
 
-        material = null;
-        return false;
+        return spec;
     }
 
-    // ---------------- Layers ----------------
+    private static PoolEntry First(PoolEntry a, PoolEntry b, Predicate<PoolEntry> match)
+    {
+        if (a != null && match(a)) return a;
+        return b != null && match(b) ? b : null;
+    }
+
+    private static void SetColor(ref TileLookSpec spec, Color color)
+    {
+        spec.hasColor = true;
+        spec.color = color;
+    }
 
     public void AddLayer()
     {
@@ -230,16 +182,14 @@ public class TileLevelData : ScriptableObject
     public float GetLayerShift(int index)
     {
         if (index < 0 || index >= layers.Count) return 0f;
-        TileLayer layer = layers[index];
-        if (layer.overrideShift) return layer.customShift;
+        if (layers[index].overrideShift) return layers[index].customShift;
         return index == 0 ? baseLayerHeight : defaultLayerShift;
     }
 
     public float GetLayerStackPosition(int index)
     {
         float total = 0f;
-        for (int i = 0; i <= index && i < layers.Count; i++)
-            total += GetLayerShift(i);
+        for (int i = 0; i <= index && i < layers.Count; i++) total += GetLayerShift(i);
         return total;
     }
 
@@ -248,15 +198,7 @@ public class TileLevelData : ScriptableObject
         int total = 0;
         foreach (TileLayer layer in layers)
         {
-            if (layer == null || layer.grid == null) continue;
-
-            for (int y = 0; y < layer.height; y++)
-            {
-                for (int x = 0; x < layer.width; x++)
-                {
-                    if (layer.GetCell(x, y)) total++;
-                }
-            }
+            if (layer != null) total += layer.CountCells();
         }
         return total;
     }

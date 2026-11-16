@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f266fdd8f0e07b54daa61e68ff717338, type: 3}
+  m_Name: Coin
+  m_EditorClassIdentifier: Assembly-CSharp::com.otm.currency.Currency
+  serializationData:
+    SerializedFormat: 1
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: Ik9uQ3VycmVuY3lFYXJuIjogewogICAgIiRpZCI6IDAsCiAgICAiJHR5cGUiOiAiMHxjb20ub3RtLnV0aWxpdHkuQWN0aW9uU3lzdGVtYDFbW1N5c3RlbS5JbnQzMiwgbXNjb3JsaWJdXSwgQXNzZW1ibHktQ1NoYXJwIgp9LAoiT25DdXJyZW5jeVNwZW5kIjogewogICAgIiRpZCI6IDEsCiAgICAiJHR5cGUiOiAwCn0sCiJPbkluZmluaXRlT3ZlciI6IHsKICAgICIkaWQiOiAyLAogICAgIiR0eXBlIjogIjF8Y29tLm90bS51dGlsaXR5LkFjdGlvblN5c3RlbSwgQXNzZW1ibHktQ1NoYXJwIgp9LAoiT25JbmZpbml0ZVVwZGF0ZSI6IHsKICAgICIkaWQiOiAzLAogICAgIiR0eXBlIjogIjJ8Y29tLm90bS51dGlsaXR5LkFjdGlvblN5c3RlbWAxW1tTeXN0ZW0uVGltZVNwYW4sIG1zY29ybGliXV0sIEFzc2VtYmx5LUNTaGFycCIKfSwKIk9uQ3VycmVuY3lDaGFuZ2UiOiB7CiAgICAiJGlkIjogNCwKICAgICIkdHlwZSI6IDAKfQ==
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  key: Coin
+  defaultValue: 0

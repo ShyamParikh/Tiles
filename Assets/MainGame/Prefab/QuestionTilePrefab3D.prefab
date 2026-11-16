@@ -153,11 +153,13 @@ MonoBehaviour:
   overrideBodyColor: 0
   bodyColor: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
   bodyColorSlot: -1
-  tintBodyWhenBlocked: 1
+  colorMode: 0
+  tintBodyWhenBlocked: 0
   blockedColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   bodyColorProperty: _BaseColor
-  questionSprite: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
-  hideAgainWhenReturnedToBoard: 1
+  CoverCount: 0
+  cover: {fileID: 3662799585550327246}
+  hideAgainOnUndo: 0
   onRevealed:
     m_PersistentCalls:
       m_Calls: []
