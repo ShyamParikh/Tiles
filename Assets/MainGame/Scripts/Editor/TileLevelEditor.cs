@@ -6,12 +6,9 @@ using UnityEngine;
 [CustomEditor(typeof(TileLevelData))]
 public class TileLevelEditor : Editor
 {
-    private int currentLayer;
-    private bool isPainting;
-    private bool paintValue = true;
-    private bool showDefaultLook = true;
-    private bool showFacePool = true;
-    private bool showTilePool = true;
+    private int layerIndex;
+    private bool painting, paintValue = true;
+    private bool showLook = true, showTypes = true, showFaces = true;
     private Vector2 gridScroll;
     private float cellSize = 24f;
 
@@ -20,20 +17,33 @@ public class TileLevelEditor : Editor
         TileLevelData level = (TileLevelData)target;
         level.MigrateLegacyData();
 
-        EditorGUILayout.Space();
-        DrawSetup(level);
-        EditorGUILayout.Space();
-        DrawLayout(level);
+        GUILayout.Label("Library & Pools", EditorStyles.boldLabel);
+        Draw("Change Tile Library", level.library,
+            v => (TileLibrary)EditorGUILayout.ObjectField("Tile Library", v, typeof(TileLibrary), false), v => level.library = v);
 
-        if (level.layers.Count == 0)
+        DrawDefaultLook(level);
+
+        if (level.library == null)
         {
-            EditorGUILayout.HelpBox("Add a layer to start designing your board.", MessageType.Info);
-            return;
+            EditorGUILayout.HelpBox("Assign a Tile Library to set up the tile and face pools.", MessageType.Info);
+        }
+        else
+        {
+            List<string> typeIds = level.library.GetTileTypeIds();
+            DrawTypePool(level, typeIds);
+            DrawFacePool(level, typeIds);
+            Draw("Change Max Faces", level.maxDifferentFaces,
+                v => EditorGUILayout.IntField(new GUIContent("Max Different Faces (auto)", "0 = use every face in the pool."), v), v => level.maxDifferentFaces = Mathf.Max(0, v));
+            Draw("Change Seed", level.seed,
+                v => EditorGUILayout.IntField(new GUIContent("Seed", "Keeps random picks the same each load. 0 = automatic."), v), v => level.seed = v);
         }
 
-        DrawLayerEditor(level);
+        DrawLayout(level);
+        if (level.layers.Count > 0) DrawLayerEditor(level);
+        else EditorGUILayout.HelpBox("Add a layer to start designing your board.", MessageType.Info);
     }
 
+    // Every change goes through here so it is undoable and saved.
     private void Edit(string undoName, Action change)
     {
         Undo.RecordObject(target, undoName);
@@ -41,142 +51,106 @@ public class TileLevelEditor : Editor
         EditorUtility.SetDirty(target);
     }
 
-    // ---------------- Library, look and pools ----------------
-
-    private void DrawSetup(TileLevelData level)
+    // Draws one control and only applies the new value when it really changed.
+    private void Draw<T>(string undoName, T current, Func<T, T> control, Action<T> apply)
     {
-        GUILayout.Label("Library & Pools", EditorStyles.boldLabel);
-
         EditorGUI.BeginChangeCheck();
-        TileLibrary library = (TileLibrary)EditorGUILayout.ObjectField("Tile Library", level.library, typeof(TileLibrary), false);
-        if (EditorGUI.EndChangeCheck()) Edit("Change Tile Library", () => level.library = library);
-
-        EditorGUILayout.Space(4);
-        DrawDefaultLook(level);
-
-        if (level.library == null)
-        {
-            EditorGUILayout.HelpBox("Assign a Tile Library to configure the Tile Pool and Face Pool.", MessageType.Info);
-            return;
-        }
-
-        List<string> typeIds = level.library.GetTileTypeIds();
-        EditorGUILayout.Space(4);
-        DrawTilePool(level, typeIds);
-        EditorGUILayout.Space(4);
-        DrawFacePool(level, typeIds);
-
-        EditorGUILayout.Space(4);
-        EditorGUI.BeginChangeCheck();
-        int maxFaces = EditorGUILayout.IntField(new GUIContent("Max Different Faces (Auto)", "0 = use every face in the pool."), level.maxDifferentFaces);
-        int seed = EditorGUILayout.IntField(new GUIContent("Seed", "Fixes random generation when Randomize Placement Every Load is off. 0 = automatic."), level.seed);
-        if (EditorGUI.EndChangeCheck()) Edit("Change Pool Randomization", () => { level.maxDifferentFaces = Mathf.Max(0, maxFaces); level.seed = seed; });
+        T value = control(current);
+        if (EditorGUI.EndChangeCheck()) Edit(undoName, () => apply(value));
     }
+
+    // ---------------- Looks ----------------
 
     private void DrawDefaultLook(TileLevelData level)
     {
-        showDefaultLook = EditorGUILayout.Foldout(showDefaultLook, "Level Default Look (Color & Material)", true, EditorStyles.foldoutHeader);
-        if (!showDefaultLook) return;
+        showLook = EditorGUILayout.Foldout(showLook, "Level Default Look (Color & Material)", true, EditorStyles.foldoutHeader);
+        if (!showLook) return;
 
         EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.LabelField("Priority: Face > Tile Type > Level Default > the Tile prefab's own look.", EditorStyles.miniLabel);
-        DrawLookRow("Change Default Board Look", "Board", 0f,
-            ref level.overrideDefaultTileColor, ref level.defaultTileColor,
-            ref level.overrideDefaultTileMaterial, ref level.defaultTileMaterial);
-        DrawLookRow("Change Default Tray Look", "In Tray", 0f,
-            ref level.overrideDefaultTrayColor, ref level.defaultTrayColor,
-            ref level.overrideDefaultTrayMaterial, ref level.defaultTrayMaterial);
-
-        EditorGUI.BeginChangeCheck();
-        int colorSlot = EditorGUILayout.IntField(new GUIContent("Color Material Slot", "-1 = tint ALL slots."), level.targetMaterialSlot);
-        int materialSlot = EditorGUILayout.IntField(new GUIContent("Material Slot", "-1 = replace ALL slots."), level.materialTargetSlot);
-        if (EditorGUI.EndChangeCheck())
-            Edit("Change Material Slots", () => { level.targetMaterialSlot = Mathf.Max(-1, colorSlot); level.materialTargetSlot = Mathf.Max(-1, materialSlot); });
-
+        EditorGUILayout.LabelField("Priority: Face > Tile Type > Level Default > the prefab's own look.", EditorStyles.miniLabel);
+        DrawLookRow("Board", 0f, ref level.overrideDefaultTileColor, ref level.defaultTileColor, ref level.overrideDefaultTileMaterial, ref level.defaultTileMaterial);
+        DrawLookRow("In Tray", 0f, ref level.overrideDefaultTrayColor, ref level.defaultTrayColor, ref level.overrideDefaultTrayMaterial, ref level.defaultTrayMaterial);
+        Draw("Change Color Slot", level.targetMaterialSlot,
+            v => EditorGUILayout.IntField(new GUIContent("Color Material Slot", "-1 = tint every slot."), v), v => level.targetMaterialSlot = Mathf.Max(-1, v));
+        Draw("Change Material Slot", level.materialTargetSlot,
+            v => EditorGUILayout.IntField(new GUIContent("Material Slot", "-1 = replace every slot."), v), v => level.materialTargetSlot = Mathf.Max(-1, v));
         EditorGUILayout.EndVertical();
     }
 
-    /// <summary>The board row and the tray row of one pool entry.</summary>
-    private void DrawEntryLooks(PoolEntry entry)
+    // The board row and the tray row of one pool entry.
+    private void DrawEntryLooks(PoolEntry e)
     {
-        DrawLookRow("Change Board Look", "Board", 18f, ref entry.overrideColor, ref entry.tileColor, ref entry.overrideMaterial, ref entry.tileMaterial);
-        DrawLookRow("Change Tray Look", "In Tray", 18f, ref entry.trayOverrideColor, ref entry.trayColor, ref entry.trayOverrideMaterial, ref entry.trayMaterial);
+        DrawLookRow("Board", 18f, ref e.overrideColor, ref e.tileColor, ref e.overrideMaterial, ref e.tileMaterial);
+        DrawLookRow("In Tray", 18f, ref e.trayOverrideColor, ref e.trayColor, ref e.trayOverrideMaterial, ref e.trayMaterial);
     }
 
-    /// <summary>One row: Label  [x] Color [picker]  [x] Material [object field].</summary>
-    private void DrawLookRow(string undoName, string label, float indent,
-        ref bool overrideColor, ref Color color, ref bool overrideMaterial, ref Material material)
+    // One line: Label  [x] Color [picker]  [x] Material [object].
+    private void DrawLookRow(string label, float indent, ref bool useColor, ref Color color, ref bool useMaterial, ref Material material)
     {
         EditorGUI.BeginChangeCheck();
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(indent);
         GUILayout.Label(label, EditorStyles.miniLabel, GUILayout.Width(46f));
 
-        bool newOverrideColor = EditorGUILayout.ToggleLeft("Color", overrideColor, GUILayout.Width(58f));
+        bool newUseColor = EditorGUILayout.ToggleLeft("Color", useColor, GUILayout.Width(58f));
         Color newColor = color;
-        using (new EditorGUI.DisabledScope(!newOverrideColor)) newColor = EditorGUILayout.ColorField(color, GUILayout.Width(60f));
+        using (new EditorGUI.DisabledScope(!newUseColor)) newColor = EditorGUILayout.ColorField(color, GUILayout.Width(60f));
 
         GUILayout.Space(8f);
 
-        bool newOverrideMaterial = EditorGUILayout.ToggleLeft("Material", overrideMaterial, GUILayout.Width(68f));
+        bool newUseMaterial = EditorGUILayout.ToggleLeft("Material", useMaterial, GUILayout.Width(68f));
         Material newMaterial = material;
-        using (new EditorGUI.DisabledScope(!newOverrideMaterial))
+        using (new EditorGUI.DisabledScope(!newUseMaterial))
             newMaterial = (Material)EditorGUILayout.ObjectField(material, typeof(Material), false, GUILayout.MinWidth(80f));
 
         EditorGUILayout.EndHorizontal();
         if (!EditorGUI.EndChangeCheck()) return;
 
-        Undo.RecordObject(target, undoName);
-        overrideColor = newOverrideColor;
+        Undo.RecordObject(target, "Change Look");
+        useColor = newUseColor;
         color = newColor;
-        overrideMaterial = newOverrideMaterial;
+        useMaterial = newUseMaterial;
         material = newMaterial;
         EditorUtility.SetDirty(target);
     }
 
-    private void DrawTilePool(TileLevelData level, List<string> typeIds)
+    // ---------------- Pools ----------------
+
+    private void DrawTypePool(TileLevelData level, List<string> typeIds)
     {
-        string header = level.tilePoolEntries.Count == 0 ? "Tile Pool (Auto: first tile type)" : $"Tile Pool ({level.tilePoolEntries.Count} selected)";
-        showTilePool = EditorGUILayout.Foldout(showTilePool, header, true, EditorStyles.foldoutHeader);
-        if (!showTilePool) return;
+        string title = level.tilePoolEntries.Count == 0 ? "Tile Pool (auto: first tile type)" : $"Tile Pool ({level.tilePoolEntries.Count} selected)";
+        showTypes = EditorGUILayout.Foldout(showTypes, title, true, EditorStyles.foldoutHeader);
+        if (!showTypes) return;
 
         EditorGUILayout.BeginVertical("box");
-        if (typeIds.Count == 0)
-        {
-            EditorGUILayout.HelpBox("The Tile Library has no tile types with a prefab assigned.", MessageType.Warning);
-        }
-        else
-        {
-            EditorGUILayout.LabelField("Tick tile types to include. Count = 0 fills remaining board tiles automatically.", EditorStyles.miniLabel);
-            foreach (string id in typeIds)
-            {
-                EditorGUILayout.BeginHorizontal();
-                TilePoolEntry entry = DrawToggle(level.tilePoolEntries, level.GetTileEntry(id), id, () => new TilePoolEntry { tileTypeId = id });
-                if (entry != null) DrawCount(entry);
-                EditorGUILayout.EndHorizontal();
+        if (typeIds.Count == 0) EditorGUILayout.HelpBox("The Tile Library has no tile types with a prefab.", MessageType.Warning);
 
-                if (entry != null) DrawEntryLooks(entry);
-            }
+        foreach (string id in typeIds)
+        {
+            EditorGUILayout.BeginHorizontal();
+            TilePoolEntry entry = DrawToggle(level.tilePoolEntries, level.GetTileEntry(id), id, () => new TilePoolEntry { tileTypeId = id });
+            if (entry != null) DrawCount(entry);
+            EditorGUILayout.EndHorizontal();
 
-            if (level.tilePoolEntries.Count > 0 && GUILayout.Button("Clear Tile Pool (Use Default)"))
-                Edit("Clear Tile Pool", level.tilePoolEntries.Clear);
+            if (entry != null) DrawEntryLooks(entry);
         }
+
+        if (level.tilePoolEntries.Count > 0 && GUILayout.Button("Clear Tile Pool (use the first type)"))
+            Edit("Clear Tile Pool", level.tilePoolEntries.Clear);
         EditorGUILayout.EndVertical();
     }
 
     private void DrawFacePool(TileLevelData level, List<string> typeIds)
     {
-        string header = level.facePoolEntries.Count == 0 ? "Face Pool (Auto: all faces)" : $"Face Pool ({level.facePoolEntries.Count} selected)";
-        showFacePool = EditorGUILayout.Foldout(showFacePool, header, true, EditorStyles.foldoutHeader);
-        if (!showFacePool) return;
-
-        EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.LabelField("Set exact Tile Count (multiples of 3) or 0 = Auto. Optionally lock a face to a Tile Type.", EditorStyles.miniLabel);
+        string title = level.facePoolEntries.Count == 0 ? "Face Pool (auto: all faces)" : $"Face Pool ({level.facePoolEntries.Count} selected)";
+        showFaces = EditorGUILayout.Foldout(showFaces, title, true, EditorStyles.foldoutHeader);
+        if (!showFaces) return;
 
         string[] lockOptions = new string[typeIds.Count + 1];
         lockOptions[0] = "Any (Tile Pool)";
         typeIds.CopyTo(lockOptions, 1);
 
+        EditorGUILayout.BeginVertical("box");
         foreach (TileFaceEntry face in level.library.Faces)
         {
             if (face == null || face.sprite == null) continue;
@@ -187,24 +161,24 @@ public class TileLevelEditor : Editor
             if (entry != null)
             {
                 DrawCount(entry);
-                DrawLock(entry, typeIds, lockOptions);
+                int current = typeIds.IndexOf(entry.lockedTileTypeId) + 1;
+                int chosen = EditorGUILayout.Popup(current, lockOptions, GUILayout.MinWidth(95f));
+                if (chosen != current) Edit("Lock Tile Type", () => entry.lockedTileTypeId = chosen == 0 ? "" : typeIds[chosen - 1]);
             }
             EditorGUILayout.EndHorizontal();
 
             if (entry == null) continue;
-
             DrawEntryLooks(entry);
             if (entry.tileCount % TileRules.SetSize != 0)
-                EditorGUILayout.HelpBox($"'{label}' has {entry.tileCount} tiles: it must be a multiple of {TileRules.SetSize}.", MessageType.Warning);
+                EditorGUILayout.HelpBox($"'{label}' has {entry.tileCount} tiles. It must be a multiple of {TileRules.SetSize}.", MessageType.Warning);
         }
 
-        if (level.facePoolEntries.Count > 0 && GUILayout.Button("Clear Face Pool (Use All Faces Auto)"))
+        if (level.facePoolEntries.Count > 0 && GUILayout.Button("Clear Face Pool (use all faces)"))
             Edit("Clear Face Pool", level.facePoolEntries.Clear);
-
         EditorGUILayout.EndVertical();
     }
 
-    /// <summary>Draws the pool checkbox and adds / removes the entry when it changes.</summary>
+    // The tick box of a pool row. Ticking adds the entry, unticking removes it.
     private T DrawToggle<T>(List<T> list, T entry, string label, Func<T> create) where T : class
     {
         bool on = EditorGUILayout.ToggleLeft(label, entry != null, GUILayout.Width(130f));
@@ -217,8 +191,7 @@ public class TileLevelEditor : Editor
         }
         if (!on && entry != null)
         {
-            T removed = entry;
-            Edit("Remove From Pool", () => list.Remove(removed));
+            Edit("Remove From Pool", () => list.Remove(entry));
             return null;
         }
         return entry;
@@ -233,38 +206,26 @@ public class TileLevelEditor : Editor
 
         count = Mathf.Max(0, count);
         if (count != entry.tileCount) Edit("Change Tile Count", () => entry.tileCount = count);
-        GUILayout.Label(entry.tileCount == 0 ? "(Auto)" : $"({entry.tileCount / TileRules.SetSize} sets)", EditorStyles.miniLabel);
+        GUILayout.Label(entry.tileCount == 0 ? "(auto)" : $"({entry.tileCount / TileRules.SetSize} sets)", EditorStyles.miniLabel);
     }
 
-    private void DrawLock(FacePoolEntry entry, List<string> typeIds, string[] options)
-    {
-        int current = typeIds.IndexOf(entry.lockedTileTypeId) + 1;
-        int chosen = EditorGUILayout.Popup(current, options, GUILayout.MinWidth(95f));
-        if (chosen != current) Edit("Change Locked Tile Type", () => entry.lockedTileTypeId = chosen == 0 ? "" : typeIds[chosen - 1]);
-    }
-
-    // ---------------- Dimensions, stacking, layers ----------------
+    // ---------------- Grid and layers ----------------
 
     private void DrawLayout(TileLevelData level)
     {
-        GUILayout.Label("Level Dimensions (For New Layers)", EditorStyles.boldLabel);
-        EditorGUI.BeginChangeCheck();
-        int width = EditorGUILayout.IntSlider("Default Width", level.defaultWidth, 1, 30);
-        int height = EditorGUILayout.IntSlider("Default Height", level.defaultHeight, 1, 30);
-        if (EditorGUI.EndChangeCheck()) Edit("Change Default Dimensions", () => { level.defaultWidth = width; level.defaultHeight = height; });
-
         EditorGUILayout.Space();
-        GUILayout.Label("Layer Stacking", EditorStyles.boldLabel);
-        EditorGUI.BeginChangeCheck();
-        float baseHeight = EditorGUILayout.FloatField(new GUIContent("Base Layer Height", "Height of the first layer, unless that layer overrides it."), level.baseLayerHeight);
-        float shift = EditorGUILayout.FloatField(new GUIContent("Default Layer Shift", "Distance between a layer and the one below it, unless that layer overrides it."), level.defaultLayerShift);
-        if (EditorGUI.EndChangeCheck()) Edit("Change Stacking Defaults", () => { level.baseLayerHeight = baseHeight; level.defaultLayerShift = shift; });
+        GUILayout.Label("Grid & Stacking", EditorStyles.boldLabel);
+        Draw("Change Width", level.defaultWidth, v => EditorGUILayout.IntSlider("Default Width", v, 1, 30), v => level.defaultWidth = v);
+        Draw("Change Height", level.defaultHeight, v => EditorGUILayout.IntSlider("Default Height", v, 1, 30), v => level.defaultHeight = v);
+        Draw("Change Base Height", level.baseLayerHeight,
+            v => EditorGUILayout.FloatField(new GUIContent("Base Layer Height", "Height of the first layer."), v), v => level.baseLayerHeight = v);
+        Draw("Change Layer Shift", level.defaultLayerShift,
+            v => EditorGUILayout.FloatField(new GUIContent("Default Layer Shift", "Distance between a layer and the one below."), v), v => level.defaultLayerShift = v);
 
-        EditorGUILayout.Space();
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
         if (GUILayout.Button("Add Layer", GUILayout.Height(30)))
-            Edit("Add Layer", () => { level.AddLayer(); currentLayer = level.layers.Count - 1; });
+            Edit("Add Layer", () => { level.AddLayer(); layerIndex = level.layers.Count - 1; });
 
         GUI.backgroundColor = new Color(0.8f, 0.4f, 0.4f);
         if (GUILayout.Button("Remove Top Layer", GUILayout.Height(30)) && level.layers.Count > 0)
@@ -276,51 +237,23 @@ public class TileLevelEditor : Editor
     private void DrawLayerEditor(TileLevelData level)
     {
         EditorGUILayout.Space();
-        GUILayout.Label("Select Layer to Edit", EditorStyles.boldLabel);
-
         string[] labels = new string[level.layers.Count];
         for (int i = 0; i < labels.Length; i++) labels[i] = $"Layer {i + 1}";
 
         int perRow = Mathf.Clamp(Mathf.FloorToInt((EditorGUIUtility.currentViewWidth - 30f) / 75f), 1, labels.Length);
-        currentLayer = GUILayout.SelectionGrid(Mathf.Clamp(currentLayer, 0, labels.Length - 1), labels, perRow);
-        TileLayer layer = level.layers[currentLayer];
+        layerIndex = GUILayout.SelectionGrid(Mathf.Clamp(layerIndex, 0, labels.Length - 1), labels, perRow);
+        TileLayer layer = level.layers[layerIndex];
 
-        EditorGUILayout.Space();
-        GUILayout.Label($"Editing Layer {currentLayer + 1} ({layer.width}x{layer.height})", EditorStyles.boldLabel);
+        Draw("Change Layer Offset", layer.offset, v => EditorGUILayout.Vector2Field("Positional Shift (X, Y)", v), v => layer.offset = v);
 
-        EditorGUI.BeginChangeCheck();
-        Vector2 offset = EditorGUILayout.Vector2Field("Positional Shift (X, Y)", layer.offset);
-        if (EditorGUI.EndChangeCheck()) Edit("Change Layer Offset", () => layer.offset = offset);
+        bool first = layerIndex == 0;
+        Draw("Override Shift", layer.overrideShift, v => EditorGUILayout.Toggle(first ? "Override Base Height" : "Override Shift", v), v => layer.overrideShift = v);
+        using (new EditorGUI.DisabledScope(!layer.overrideShift))
+            Draw("Change Layer Shift", layer.customShift, v => EditorGUILayout.FloatField(first ? "Base Height" : "Layer Shift", v), v => layer.customShift = v);
+        EditorGUILayout.LabelField("Resulting Height", level.GetLayerStackPosition(layerIndex).ToString("0.###"));
 
-        DrawLayerShift(level, layer);
-        EditorGUILayout.Space();
         DrawSummary(level);
-        EditorGUILayout.Space();
-        DrawGrid(level, layer);
-    }
-
-    private void DrawLayerShift(TileLevelData level, TileLayer layer)
-    {
-        bool isBase = currentLayer == 0;
-        float fallback = isBase ? level.baseLayerHeight : level.defaultLayerShift;
-
-        EditorGUI.BeginChangeCheck();
-        bool overrideShift = EditorGUILayout.Toggle(
-            new GUIContent(isBase ? "Override Base Height" : "Override Shift", "Use a custom value for this layer instead of the level default."),
-            layer.overrideShift);
-
-        float custom;
-        using (new EditorGUI.DisabledScope(!overrideShift))
-        {
-            custom = EditorGUILayout.FloatField(
-                new GUIContent(isBase ? "Base Height" : "Layer Shift", isBase ? "Height of the base layer." : "Distance above the previous layer. 0 = same height."),
-                overrideShift ? layer.customShift : fallback);
-        }
-
-        if (EditorGUI.EndChangeCheck())
-            Edit("Change Layer Shift", () => { layer.overrideShift = overrideShift; if (overrideShift) layer.customShift = custom; });
-
-        EditorGUILayout.LabelField("Resulting Height", level.GetLayerStackPosition(currentLayer).ToString("0.###"));
+        DrawGrid(layer);
     }
 
     private static void DrawSummary(TileLevelData level)
@@ -328,39 +261,31 @@ public class TileLevelEditor : Editor
         int per = TileRules.SetSize;
         int painted = level.CountTiles();
         int usable = painted / per * per;
-        int faceFixed = FixedTotal(level.facePoolEntries, out int faceAuto);
-        int tileFixed = FixedTotal(level.tilePoolEntries, out int tileAuto);
+        int faceFixed = FixedTotal(level.facePoolEntries);
+        int tileFixed = FixedTotal(level.tilePoolEntries);
 
         if (painted % per != 0)
-            EditorGUILayout.HelpBox($"Painted Grid: {painted} tiles (not a multiple of {per}; last {painted % per} will be skipped -> {usable} usable).", MessageType.Warning);
+            EditorGUILayout.HelpBox($"Painted: {painted} tiles, not a multiple of {per}. The last {painted % per} will be skipped.", MessageType.Warning);
         else
-            EditorGUILayout.HelpBox(
-                $"Painted Grid: {painted} tiles ({painted / per} sets of {per})\n" +
-                $"Face Pool: {faceFixed} fixed tiles + {Mathf.Max(0, usable - faceFixed)} auto tiles ({faceAuto} auto faces)\n" +
-                $"Tile Pool: {tileFixed} fixed tiles + {Mathf.Max(0, usable - tileFixed)} auto tiles ({tileAuto} auto tile types)",
-                MessageType.Info);
+            EditorGUILayout.HelpBox($"Painted: {painted} tiles ({painted / per} sets of {per}).", MessageType.Info);
 
-        if (faceFixed > usable) EditorGUILayout.HelpBox($"Face Pool fixed counts ({faceFixed}) exceed usable board tiles ({usable})!", MessageType.Error);
-        if (tileFixed > usable) EditorGUILayout.HelpBox($"Tile Pool fixed counts ({tileFixed}) exceed usable board tiles ({usable})!", MessageType.Error);
+        if (faceFixed > usable) EditorGUILayout.HelpBox($"Face Pool counts ({faceFixed}) are more than the board holds ({usable})!", MessageType.Error);
+        if (tileFixed > usable) EditorGUILayout.HelpBox($"Tile Pool counts ({tileFixed}) are more than the board holds ({usable})!", MessageType.Error);
     }
 
-    private static int FixedTotal<T>(List<T> entries, out int autoCount) where T : PoolEntry
+    private static int FixedTotal<T>(List<T> entries) where T : PoolEntry
     {
         int total = 0;
-        autoCount = 0;
         foreach (T entry in entries)
         {
-            if (entry == null) continue;
-            if (entry.tileCount > 0) total += entry.tileCount;
-            else autoCount++;
+            if (entry != null) total += entry.tileCount;
         }
         return total;
     }
 
-    // ---------------- Grid painting ----------------
-
-    private void DrawGrid(TileLevelData level, TileLayer layer)
+    private void DrawGrid(TileLayer layer)
     {
+        EditorGUILayout.Space();
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("Grid Painting", EditorStyles.boldLabel);
         GUILayout.FlexibleSpace();
@@ -389,10 +314,11 @@ public class TileLevelEditor : Editor
         GUILayout.EndVertical();
         EditorGUILayout.EndScrollView();
 
-        if (e.type == EventType.MouseUp) isPainting = false;
+        if (e.type == EventType.MouseUp) painting = false;
         if (e.type == EventType.MouseDrag) Repaint();
     }
 
+    // One cell. Click to flip it, drag to paint the same value over several cells.
     private void DrawCell(TileLayer layer, int x, int y, Event e)
     {
         Rect rect = GUILayoutUtility.GetRect(cellSize, cellSize, GUILayout.ExpandWidth(false));
@@ -406,12 +332,12 @@ public class TileLevelEditor : Editor
 
         if (e.type == EventType.MouseDown && e.button == 0)
         {
-            isPainting = true;
+            painting = true;
             paintValue = !active;
             Edit("Paint Tile", () => layer.SetCell(x, y, paintValue));
             e.Use();
         }
-        else if (e.type == EventType.MouseDrag && isPainting)
+        else if (e.type == EventType.MouseDrag && painting)
         {
             if (active != paintValue) Edit("Paint Tile", () => layer.SetCell(x, y, paintValue));
             e.Use();

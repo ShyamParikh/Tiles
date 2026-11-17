@@ -1,6 +1,6 @@
 using UnityEngine;
 
-/// <summary>A material and / or color change for a tile body. No material and no color means "no change".</summary>
+// "Change the material to this and / or the color to that." No material and no color means no change.
 public struct TileLookSpec
 {
     public Material material;

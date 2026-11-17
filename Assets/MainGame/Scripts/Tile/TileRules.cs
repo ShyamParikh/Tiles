@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Small helpers that several scripts share.
 public static class TileRules
 {
+    // How many identical tiles make a match.
     public const int SetSize = 3;
 
     public static void Shuffle<T>(IList<T> list, System.Random rng)
@@ -16,12 +18,12 @@ public static class TileRules
         }
     }
 
-    /// <summary>Sorts by face and returns every run of equal faces as (start index, length).</summary>
+    // Sorts the tiles by face and returns every group of equal faces as (start index, length).
     public static List<Vector2Int> FaceRuns(List<Tile> tiles)
     {
         tiles.Sort((a, b) => a.FaceId.CompareTo(b.FaceId));
-        List<Vector2Int> runs = new List<Vector2Int>();
 
+        List<Vector2Int> runs = new List<Vector2Int>();
         for (int start = 0; start < tiles.Count;)
         {
             int end = start + 1;

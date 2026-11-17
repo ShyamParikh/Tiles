@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
-  m_Name: Copy
+  m_Name: Level 5
   m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
   library: {fileID: 11400000, guid: 063f1797a67b54562bc986bcd146af86, type: 2}
   overrideDefaultTileColor: 0
@@ -20,54 +20,10 @@ MonoBehaviour:
   defaultTileMaterial: {fileID: 0}
   materialTargetSlot: -1
   overrideDefaultTrayColor: 0
-  defaultTrayColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
-  overrideDefaultTrayMaterial: 1
-  defaultTrayMaterial: {fileID: 2100000, guid: aacbdf0c0e5bd9b4fa2f8b6341d20131, type: 2}
+  defaultTrayColor: {r: 1, g: 1, b: 1, a: 1}
+  overrideDefaultTrayMaterial: 0
+  defaultTrayMaterial: {fileID: 0}
   facePoolEntries:
-  - tileCount: 18
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 0
-    lockedTileTypeId: 
-  - tileCount: 15
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 1
-    lockedTileTypeId: 
-  - tileCount: 18
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 2
-    lockedTileTypeId: 
-  - tileCount: 15
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 3
-    lockedTileTypeId: 
   - tileCount: 3
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
@@ -77,19 +33,107 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 4
+    faceId: 0
     lockedTileTypeId: Merge
-  tilePoolEntries:
-  - tileCount: 9
+  - tileCount: 0
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 1
-    tileMaterial: {fileID: 2100000, guid: 516bb5d9893a3411587c8bf7f5482929, type: 2}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
     trayOverrideColor: 0
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    tileTypeId: Cloudy
+    faceId: 4
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 10
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 9
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 30
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 31
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 28
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 33
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 19
+    lockedTileTypeId: 
+  tilePoolEntries:
+  - tileCount: 78
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    tileTypeId: Classic
   - tileCount: 3
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
@@ -100,68 +144,30 @@ MonoBehaviour:
     trayOverrideMaterial: 1
     trayMaterial: {fileID: 2100000, guid: 0ee16b057d71c4fd9bd379d82bba299c, type: 2}
     tileTypeId: Merge
-  - tileCount: 9
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 1
-    tileMaterial: {fileID: 2100000, guid: d6c5679cf184043a7a5c6a40099eea4b, type: 2}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    tileTypeId: Question
-  - tileCount: 48
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    tileTypeId: Classic
   maxDifferentFaces: 0
   seed: 0
   tileTypeId: 
   facePool: 
-  defaultWidth: 7
-  defaultHeight: 7
-  baseLayerHeight: -15
-  defaultLayerShift: -20
+  defaultWidth: 5
+  defaultHeight: 6
+  baseLayerHeight: -30
+  defaultLayerShift: -90
   layers:
-  - width: 7
-    height: 7
-    offset: {x: 0, y: 0}
+  - width: 5
+    height: 8
+    offset: {x: 0.5, y: 0}
     overrideShift: 0
-    customShift: 0
-    grid: 01010100000000000001000000000000010000000000000100000000000001000000000000010000000000000101010000
-  - width: 7
+    customShift: -30
+    grid: 01010101010101010101010101010101010101010101010101010101010101010101010101000101
+  - width: 6
     height: 7
-    offset: {x: -0.5, y: 0}
+    offset: {x: 0, y: 0.5}
     overrideShift: 0
-    customShift: -20
-    grid: 00010101000000000000010000000000000100000000000001000000000000010000000000000100000000000001010100
-  - width: 7
-    height: 7
-    offset: {x: -1, y: 0}
+    customShift: -90
+    grid: 010001010001000101010100000101010100000001010000000101010100000101010100000101010100
+  - width: 5
+    height: 6
+    offset: {x: 0.5, y: 1}
     overrideShift: 0
-    customShift: -20
-    grid: 00000101010000000000000100000000000001000000000000010000000000000100000000000001000000000000010101
-  - width: 7
-    height: 7
-    offset: {x: -0.5, y: 0}
-    overrideShift: 0
-    customShift: -20
-    grid: 00000101010000000000000100000000000001000000000000010000000000000100000000000001000000000000010101
-  - width: 7
-    height: 7
-    offset: {x: 0, y: 0}
-    overrideShift: 0
-    customShift: -20
-    grid: 00000101010000000000000100000000000001000000000000010000000000000100000000000001000000000000010101
-  - width: 7
-    height: 7
-    offset: {x: 0, y: 0}
-    overrideShift: 0
-    customShift: -20
-    grid: 00000000000101010000000000010100000000000101000000000001010000000000010100000000000101010000000000
+    customShift: -90
+    grid: 010100010100010101000000010000000001000000010101000101000101

@@ -4,37 +4,31 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-/// <summary>
-/// Shows the player's coins. Whenever coins are earned (a win, a debugger button, anything) a coin shower plays:
-/// coin images appear, fly into the counter, and the number counts up as they arrive.
-/// </summary>
+// Shows the player's coins. When coins are earned, coin images pop out, fly into the counter,
+// and the number counts up as each one lands.
 public class CoinShower : MonoBehaviour
 {
     private const string TweenId = "CoinShower";
 
-    [Header("Scene References (Assign in Inspector)")]
-    [Tooltip("Initialises the coin currency before this listens to it.")]
     [SerializeField] private TileEconomyManager economyManager;
 
     [Header("Counter")]
     [SerializeField] private TMP_Text coinText;
-    [Tooltip("The coin icon next to the number. Coins fly here and it pulses on every arrival.")]
+    [Tooltip("The coin icon next to the number. Coins fly here and it pulses when one lands.")]
     [SerializeField] private RectTransform counterTarget;
     [Tooltip("{0} = the coin amount.")]
     [SerializeField] private string textFormat = "{0}";
-    [Tooltip("How much the counter icon pulses when a coin arrives.")]
     [SerializeField] private float pulseStrength = 0.15f;
 
     [Header("Shower")]
-    [Tooltip("The coin image prefab (a RectTransform with an Image).")]
+    [Tooltip("The coin image to copy (a RectTransform with an Image).")]
     [SerializeField] private RectTransform coinPrefab;
-    [Tooltip("Canvas object the coins are created under. Put it above your panels.")]
+    [Tooltip("The canvas object the coins live under. Put it above your panels.")]
     [SerializeField] private RectTransform coinParent;
-    [Tooltip("Where the coins appear.")]
     [SerializeField] private RectTransform spawnPoint;
-    [Tooltip("Size of the area (canvas units) around the spawn point where coins appear. Wide and short = a shower, small = a burst.")]
+    [Tooltip("Size of the area (canvas units) coins appear in. Wide and short = a shower, small = a burst.")]
     [SerializeField] private Vector2 spawnSpread = new Vector2(600f, 200f);
-    [Tooltip("Most coin images on screen at once. This is also the size of the pool.")]
+    [Tooltip("Most coin images on screen at once.")]
     [SerializeField] private int maxCoins = 15;
     [Tooltip("Wait before the shower starts, e.g. to line up with the win panel.")]
     [SerializeField] private float showerDelay = 0.5f;
@@ -46,17 +40,11 @@ public class CoinShower : MonoBehaviour
 
     private readonly List<RectTransform> pool = new List<RectTransform>();
     private Currency coins;
-    private int unshown;   // coins earned whose images have not arrived at the counter yet
-    private bool registered;
+    private CurrencyWatcher watcher;
+    private int unshown;   // coins earned whose images haven't landed yet
 
     private void Start()
     {
-        if (economyManager == null || coinText == null || counterTarget == null || spawnPoint == null || coinPrefab == null || coinParent == null)
-        {
-            Debug.LogError("[COINS] Economy Manager, Coin Text, Counter Target, Spawn Point, Coin Prefab and Coin Parent must be assigned!", this);
-            return;
-        }
-
         economyManager.EnsureInitialized();
         coins = economyManager.CoinCurrency;
         if (coins == null)
@@ -72,16 +60,15 @@ public class CoinShower : MonoBehaviour
             pool.Add(coin);
         }
 
-        coins.OnCurrencyChange.RegisterEvent(OnCoinsChanged);
+        watcher = new CurrencyWatcher(coins, Refresh);
         coins.OnCurrencyEarn.RegisterEvent(PlayShower);
-        registered = true;
         Refresh();
     }
 
     private void OnDisable()
     {
         DOTween.Kill(TweenId);
-        foreach (RectTransform coin in pool) coin.gameObject.SetActive(false);
+        pool.ForEach(c => c.gameObject.SetActive(false));
 
         unshown = 0;
         if (coins != null) Refresh();
@@ -89,51 +76,38 @@ public class CoinShower : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (!registered || coins == null) return;
+        if (watcher == null) return;
 
-        coins.OnCurrencyChange.DeRegisterEvent(OnCoinsChanged);
+        watcher.Dispose();
         coins.OnCurrencyEarn.DeRegisterEvent(PlayShower);
     }
 
-    private void OnCoinsChanged(int value)
-    {
-        Refresh();
-    }
-
-    /// <summary>The number on screen is the real amount minus the coins still flying in.</summary>
+    // The number on screen is the real amount minus the coins still flying in.
     private void Refresh()
     {
         coinText.text = string.Format(textFormat, Mathf.Max(0, coins.Value - unshown));
     }
 
-    /// <summary>Plays the shower for this many coins. Called automatically whenever coins are earned.</summary>
+    // Plays the shower for this many coins. It runs automatically whenever coins are earned.
     public void PlayShower(int amount)
     {
-        if (amount <= 0 || coins == null) return;
+        if (amount <= 0) return;
 
         unshown += amount;
         Refresh();
 
-        int visual = Mathf.Max(1, Mathf.Min(amount, pool.Count));
-        int share = amount / visual;
+        // Few images carry many coins, so a big reward doesn't need a hundred sprites.
+        int images = Mathf.Max(1, Mathf.Min(amount, pool.Count));
+        int share = amount / images;
 
-        for (int i = 0; i < visual; i++)
+        for (int i = 0; i < images; i++)
         {
-            int worth = i == visual - 1 ? amount - share * (visual - 1) : share;
-            RectTransform coin = FreeCoin();
+            int worth = i == images - 1 ? amount - share * (images - 1) : share;
+            RectTransform coin = pool.Find(c => !c.gameObject.activeSelf);
 
-            if (coin == null) Arrive(worth);   // no free coin image: just count the coins up
+            if (coin == null) Land(worth);   // no free image: just count the coins up
             else Launch(coin, showerDelay + i * stagger, worth);
         }
-    }
-
-    private RectTransform FreeCoin()
-    {
-        foreach (RectTransform coin in pool)
-        {
-            if (!coin.gameObject.activeSelf) return coin;
-        }
-        return null;
     }
 
     private void Launch(RectTransform coin, float delay, int worth)
@@ -153,11 +127,12 @@ public class CoinShower : MonoBehaviour
         sequence.OnComplete(() =>
         {
             coin.gameObject.SetActive(false);
-            Arrive(worth);
+            Land(worth);
         });
     }
 
-    private void Arrive(int worth)
+    // A coin image reached the counter: show its coins and pulse the icon.
+    private void Land(int worth)
     {
         unshown = Mathf.Max(0, unshown - worth);
         Refresh();

@@ -4,15 +4,13 @@ using com.otm.manager;
 using DG.Tweening;
 using UnityEngine;
 
-/// <summary>
-/// Runs the extra merges requested by MergeBurstTile: waits for the triggering merge to finish, then gathers
-/// random complete sets from the board and merges them one after another.
-/// </summary>
+// Runs the extra merges a MergeBurstTile asks for. It waits for the merge that triggered it to finish,
+// then picks random full sets from the board, lines each one up and plays the normal merge animation.
 public class MergeBurstManager : Manager<MergeBurstManager>
 {
     private const string TweenId = "MergeBurst";
 
-    [Header("Scene References (Assign in Inspector)")]
+    [Header("Scene references")]
     [SerializeField] private TileGameManager gameManager;
     [SerializeField] private TileBoardManager boardManager;
     [SerializeField] private TileTrayManager trayManager;
@@ -20,20 +18,20 @@ public class MergeBurstManager : Manager<MergeBurstManager>
     [Tooltip("Optional: the burst waits while a booster is running.")]
     [SerializeField] private BoosterManager boosterManager;
 
-    [Header("Merge Burst")]
-    [Tooltip("On = a burst set that contains another burst tile triggers its burst too.")]
+    [Header("Burst")]
+    [Tooltip("On = a burst tile that gets merged inside a burst triggers its own burst too.")]
     [SerializeField] private bool allowChainBursts = true;
     [SerializeField] private float startDelay = 0.15f;
     [SerializeField] private float delayBetweenSets = 0.2f;
-    [Tooltip("Safety: give up waiting for a merge animation after this many seconds.")]
+    [Tooltip("Gives up waiting for a merge animation after this long.")]
     [SerializeField] private float maxWaitForMerge = 3f;
 
-    [Header("Gather Animation")]
+    [Header("Lining the tiles up")]
     [SerializeField] private float gatherDuration = 0.35f;
     [SerializeField] private Ease gatherEase = Ease.InOutQuad;
-    [Tooltip("World-space distance between the 3 tiles when they line up.")]
+    [Tooltip("World distance between the three tiles when they line up.")]
     [SerializeField] private float gatherSpacing = 1.2f;
-    [Tooltip("Shifts the meeting point (world space), e.g. toward the camera.")]
+    [Tooltip("Moves the meeting point, e.g. toward the camera so tiles don't clip others.")]
     [SerializeField] private Vector3 gatherWorldOffset = Vector3.zero;
 
     private readonly System.Random rng = new System.Random();
@@ -85,7 +83,7 @@ public class MergeBurstManager : Manager<MergeBurstManager>
 
     private IEnumerator Run()
     {
-        yield return null;   // let TileMergeManager register the merge that triggered us
+        yield return null;   // give TileMergeManager a frame to register the merge that triggered us
         while (Busy) yield return null;
         yield return new WaitForSeconds(startDelay);
 
@@ -97,11 +95,13 @@ public class MergeBurstManager : Manager<MergeBurstManager>
             List<Tile> set = PickSet();
             if (set == null) break;
 
+            // Line the three up, and wait until they have all arrived (or time out).
             arrived = 0;
             Gather(set);
             for (float waited = 0f; arrived < set.Count && waited < gatherDuration + 2f; waited += Time.deltaTime) yield return null;
-            if (!set.TrueForAll(t => t != null)) continue;
+            if (set.Exists(t => t == null)) continue;
 
+            // Take them off the board, then reuse the normal merge animation.
             foreach (Tile tile in set)
             {
                 TileTrayManager.tilePickedUp?.Invoke(tile);
@@ -116,7 +116,7 @@ public class MergeBurstManager : Manager<MergeBurstManager>
         Stop();
     }
 
-    /// <summary>A random face that still has a full set on the board, and 3 random tiles of it.</summary>
+    // A random face that still has a full set on the board, and three random tiles of it.
     private List<Tile> PickSet()
     {
         List<Tile> board = new List<Tile>(boardManager.Tiles);
@@ -130,7 +130,7 @@ public class MergeBurstManager : Manager<MergeBurstManager>
         return group.GetRange(0, TileRules.SetSize);
     }
 
-    /// <summary>Lines the 3 tiles up around their common center so the normal merge animation looks right.</summary>
+    // Moves the three tiles into a row around their common center, so the merge animation looks right.
     private void Gather(List<Tile> set)
     {
         set.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));

@@ -150,6 +150,7 @@ Transform:
   m_Children:
   - {fileID: 1046299508}
   - {fileID: 1822868130}
+  - {fileID: 1510027155}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &70535865
@@ -1684,13 +1685,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1981286739}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &410087042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2450,7 +2451,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e308da96d1f2d42ee827429d73e1a781, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TileArrangementManager
-  gameManager: {fileID: 1841558927}
   fallHeight: 8
   fallDirection: {x: 0, y: 1, z: 0}
   fallDuration: 0.45
@@ -2673,6 +2673,12 @@ MonoBehaviour:
   - {fileID: 1208072506}
   - {fileID: 1002568838}
   - {fileID: 443847204}
+  tilePose:
+    scale: {x: 0.66, y: 0.66, z: 0.66}
+    setRotation: 1
+    rotation: {x: -70, y: 180, z: 0}
+    duration: 0.3
+    ease: 6
 --- !u!1001 &720767577
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3877,7 +3883,7 @@ MonoBehaviour:
   tileLayers:
     serializedVersion: 2
     m_Bits: 119
-  maxRayDistance: 1e+9
+  maxRayDistance: 1000
 --- !u!114 &1181608509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4105,14 +4111,14 @@ MonoBehaviour:
   generateOnStart: 0
   randomizePlacementEveryLoad: 1
   boardPlane: 1
-  tileRotation: {x: 180, y: 0, z: 180}
+  tileRotation: {x: 210, y: 0, z: 180}
   invertStackingDirection: 0
-  sizingMode: 1
+  centerBoard: 1
+  sizingMode: 0
   manualTileSize: {x: 1, y: 1}
-  manualGap: {x: 111, y: 105}
+  manualGap: {x: 150, y: 135}
   totalAreaDimensions: {x: 900, y: 900}
   targetBoundsBox: {fileID: 0}
-  centerBoard: 1
 --- !u!1 &1280660872
 GameObject:
   m_ObjectHideFlags: 0
@@ -4341,6 +4347,54 @@ MonoBehaviour:
   - {fileID: 274914413}
   - {fileID: 279758365}
   - {fileID: 445758394}
+--- !u!1 &1510027154
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1510027155}
+  - component: {fileID: 1510027156}
+  m_Layer: 0
+  m_Name: EconomyDebugger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1510027155
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510027154}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 67596357}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1510027156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510027154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12e87b20b9c6b0f408fa5caee5145b57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TileEconomyDebugger
+  economyManager: {fileID: 1991285525}
+  boosterManager: {fileID: 1500106111}
+  lifeCurrency: {fileID: 0}
+  refillBoostersTo: 5
 --- !u!1 &1530348869
 GameObject:
   m_ObjectHideFlags: 0
@@ -4467,7 +4521,7 @@ MonoBehaviour:
   gatherDuration: 0.35
   gatherEase: 7
   gatherSpacing: 1.2
-  gatherWorldOffset: {x: 0, y: 0, z: 0}
+  gatherWorldOffset: {x: 0, y: 0, z: -100}
 --- !u!224 &1684407080 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8881907613928696194, guid: 571481c6bfb764567ac552e15752639f, type: 3}
@@ -4992,7 +5046,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 50cc3aca011ff4b2791c983395b10e50, type: 2}
   - {fileID: 11400000, guid: 93c3fd0d26c95440f84cbc4f6643ece7, type: 2}
   - {fileID: 11400000, guid: 9cb25b002398e214b89f6429979fdb53, type: 2}
+  - {fileID: 11400000, guid: 2b3f951d2d45b6c499b66b64da01bb11, type: 2}
   - {fileID: 11400000, guid: c4bd26cfbb999412b8efd285d558b5cc, type: 2}
+  - {fileID: 11400000, guid: 0c838ae805bcf5c4ea846a93e6cb6ef3, type: 2}
   loopLevels: 1
   progressKey: TileExplorer
   spawner: {fileID: 1271533677}
@@ -5098,10 +5154,10 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: -257325685
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!1001 &1871720705
@@ -5573,7 +5629,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b42d599da2682774d8de0274f10c6660, type: 2}
   coinCurrency: {fileID: 11400000, guid: ebc41098c4bbf47b793713b6070653d0, type: 2}
   initializeCurrencies: 1
-  enableSaving: 1
   coinsPerWin: 300
   offers:
   - offerId: 

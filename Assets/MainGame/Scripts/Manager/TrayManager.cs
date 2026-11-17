@@ -4,14 +4,17 @@ using com.otm.manager;
 using DG.Tweening;
 using UnityEngine;
 
-/// <summary>Holds the tiles in the tray, keeps same faces together and merges complete sets.</summary>
+// Holds the picked tiles: same faces sit together, three of a kind merge, a full tray is a loss.
 public class TileTrayManager : Manager<TileTrayManager>
 {
-    [Header("Scene References (Assign in Inspector)")]
     [SerializeField] private TileGameManager gameManager;
     [SerializeField] private TileArrangementManager arrangementManager;
-    [Tooltip("Drag all TraySlot objects in order, left to right.")]
+    [Tooltip("The tray slots, left to right. The number of slots is the size of the tray.")]
     [SerializeField] private List<TraySlot> slots = new List<TraySlot>();
+
+    [Header("Tile in the tray")]
+    [Tooltip("The size and rotation a tile gets when it reaches a slot, and the animation into that pose.")]
+    [SerializeField] private TrayPose tilePose = new TrayPose();
 
     public static Action<Tile> tilePickedUp;
     public static Action<List<Tile>> startMerge;
@@ -22,7 +25,6 @@ public class TileTrayManager : Manager<TileTrayManager>
     private int externalLocks;
 
     public int TileCount => tiles.Count;
-    public int SlotCount => slots.Count;
     public int FreeSlotCount => slots.Count - tiles.Count;
     public bool IsExternallyLocked => externalLocks > 0;
     public bool IsLocked => flying || externalLocks > 0;
@@ -37,31 +39,23 @@ public class TileTrayManager : Manager<TileTrayManager>
         TileInputManager.tileClicked -= OnTileClicked;
     }
 
-    private void Start()
-    {
-        if (gameManager == null || arrangementManager == null || slots.Count == 0)
-            Debug.LogError("[TRAY] Game Manager, Arrangement Manager and at least one Slot must be assigned!", this);
-    }
-
-    /// <summary>Boosters and effects lock the tray while they run. Every true needs its own false.</summary>
+    // Boosters and effects lock the tray while they run. Every true needs its own false.
     public void SetExternalLock(bool locked)
     {
         externalLocks = locked ? externalLocks + 1 : Mathf.Max(0, externalLocks - 1);
     }
 
+    // How many tiles of this face are in the tray right now.
     public int CountOf(int faceId)
     {
-        int count = 0;
-        foreach (Tile tile in tiles)
-        {
-            if (tile.FaceId == faceId) count++;
-        }
-        return count;
+        return tiles.FindAll(t => t.FaceId == faceId).Count;
     }
 
     private void OnTileClicked(Tile tile)
     {
-        if (tile == null || IsLocked || tile.IsBlocked || tile.Slot != null || tiles.Count >= slots.Count || !gameManager.IsPlaying) return;
+        bool canTake = tile != null && !IsLocked && !tile.IsBlocked && tile.Slot == null
+            && tiles.Count < slots.Count && gameManager.IsPlaying;
+        if (!canTake) return;
 
         flying = true;
         Place(tile, () => OnArrived(tile));
@@ -73,7 +67,7 @@ public class TileTrayManager : Manager<TileTrayManager>
         else trayFull?.Invoke();
     }
 
-    /// <summary>Puts a tile next to its face mates and flies it to its slot.</summary>
+    // Puts a tile next to its face mates and flies it into its slot.
     private void Place(Tile tile, Action onArrived)
     {
         tilePickedUp?.Invoke(tile);
@@ -83,32 +77,30 @@ public class TileTrayManager : Manager<TileTrayManager>
         tiles.Insert(index, tile);
         Compact(index + 1);
 
-        arrangementManager.MoveTileToSlot(tile, slots[index], () =>
+        arrangementManager.MoveTileToSlot(tile, slots[index], tilePose, () =>
         {
             if (tile.Slot != null) tile.Slot.PlayBumpAnimation();
             onArrived?.Invoke();
         });
     }
 
+    // Right after the last tile of the same face, or at the end if there is none.
     private int InsertIndex(int faceId)
     {
-        for (int i = tiles.Count - 1; i >= 0; i--)
-        {
-            if (tiles[i].FaceId == faceId) return i + 1;
-        }
-        return tiles.Count;
+        int last = tiles.FindLastIndex(t => t.FaceId == faceId);
+        return last >= 0 ? last + 1 : tiles.Count;
     }
 
-    /// <summary>Moves every tile from this index on into its own slot.</summary>
+    // Slides every tile from this index on into its own slot.
     private void Compact(int start)
     {
         for (int i = start; i < tiles.Count; i++)
         {
-            if (tiles[i].Slot != slots[i]) arrangementManager.MoveTileToSlot(tiles[i], slots[i], null);
+            if (tiles[i].Slot != slots[i]) arrangementManager.MoveTileToSlot(tiles[i], slots[i], tilePose, null);
         }
     }
 
-    /// <summary>Merges the face if the tray holds a full set of it.</summary>
+    // Merges the face if the tray holds a full set of it.
     public bool MergeIfComplete(int faceId)
     {
         if (CountOf(faceId) < TileRules.SetSize) return false;
@@ -120,14 +112,14 @@ public class TileTrayManager : Manager<TileTrayManager>
         return true;
     }
 
-    /// <summary>Booster path: adds a tile from anywhere on the board. Call MergeIfComplete once all arrived.</summary>
+    // Booster path: pull in a tile from anywhere on the board. Call MergeIfComplete once they have all arrived.
     public void InsertFromBooster(Tile tile, Action onArrived)
     {
         if (tile == null || tiles.Count >= slots.Count) onArrived?.Invoke();
         else Place(tile, onArrived);
     }
 
-    /// <summary>Undo path: removes the tile and slides the ones after it to the left.</summary>
+    // Undo path: takes the tile out and slides the ones after it to the left.
     public bool RemoveTile(Tile tile)
     {
         int index = tiles.IndexOf(tile);

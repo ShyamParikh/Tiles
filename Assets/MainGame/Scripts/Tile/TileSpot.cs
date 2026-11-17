@@ -1,6 +1,6 @@
 using UnityEngine;
 
-/// <summary>A place on the board. Shuffling swaps spots between tiles.</summary>
+// One spot on the board. Shuffling just swaps these between tiles.
 public struct TileSpot
 {
     public int layer;

@@ -99,7 +99,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 6
+    faceId: 9
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -110,7 +110,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 7
+    faceId: 11
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -121,7 +121,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 8
+    faceId: 12
     lockedTileTypeId: 
   tilePoolEntries:
   - tileCount: 0
@@ -150,8 +150,8 @@ MonoBehaviour:
   facePool: 
   defaultWidth: 6
   defaultHeight: 7
-  baseLayerHeight: -15
-  defaultLayerShift: -25
+  baseLayerHeight: -30
+  defaultLayerShift: -90
   layers:
   - width: 7
     height: 8
@@ -161,7 +161,7 @@ MonoBehaviour:
     grid: 0000010001000000010101010100000101010101000001010001010000010101010100000101010101000001010101010000000100010000
   - width: 6
     height: 7
-    offset: {x: 0.5, y: 0}
+    offset: {x: 0.5, y: 0.5}
     overrideShift: 0
     customShift: -25
     grid: 000001010000000101010100010101010101010101010101010101010101000101010100000001010000

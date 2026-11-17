@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Completes one set. Prefers a face already in the tray (pulls only 1 or 2 tiles), otherwise pulls 3.
-/// Tiles come from anywhere on the board, even covered ones.
-/// </summary>
+// Completes one set. It prefers a face that is already in the tray (so only 1 or 2 tiles are pulled),
+// otherwise it pulls 3. Tiles come from anywhere on the board, even covered ones.
 public class AutoCompleteBooster : BoosterBase
 {
     public override BoosterType Type => BoosterType.AutoComplete;
@@ -22,6 +20,7 @@ public class AutoCompleteBooster : BoosterBase
         else PullNext(plan, 0, onFinished);
     }
 
+    // Pulls the planned tiles in one after another, then merges the finished set.
     private void PullNext(List<Tile> plan, int index, Action<bool> onFinished)
     {
         if (index == plan.Count)
@@ -33,13 +32,12 @@ public class AutoCompleteBooster : BoosterBase
         Manager.Tray.InsertFromBooster(plan[index], () => PullNext(plan, index + 1, onFinished));
     }
 
-    /// <summary>The tiles to pull, or null when no set fits into the free tray slots.</summary>
+    // The tiles to pull, or null when no set fits into the free tray slots.
     private List<Tile> BuildPlan()
     {
         List<Tile> board = new List<Tile>(Manager.Board.Tiles);
-        int bestInTray = -1;
         Vector2Int bestRun = default;
-        int bestNeed = 0;
+        int bestInTray = -1, bestNeed = 0;
 
         foreach (Vector2Int run in TileRules.FaceRuns(board))
         {

@@ -2,45 +2,35 @@ using System.Collections.Generic;
 using com.otm.manager;
 using UnityEngine;
 
-public enum BoardMovableRule
-{
-    TopTilesMovable,
-    BottomTilesMovable
-}
+public enum BoardMovableRule { TopTilesMovable, BottomTilesMovable }
+public enum BoardTopMode { AutoFromSpawner, CustomDirection, TowardsTopReference }
 
-public enum BoardTopMode
-{
-    AutoFromSpawner,
-    CustomDirection,
-    TowardsTopReference
-}
-
-/// <summary>Knows which tiles are on the board and which of them are covered.</summary>
+// Keeps track of the tiles on the board and which of them are covered by another tile.
 public class TileBoardManager : Manager<TileBoardManager>
 {
-    [Header("Scene References (Assign in Inspector)")]
     [SerializeField] private TileVisualSpawner spawner;
 
-    [Header("Movable Tile Rule")]
-    [Tooltip("TopTilesMovable = outer/top tiles move first. BottomTilesMovable = bottom/inner tiles move first.")]
-    [SerializeField] private BoardMovableRule movableRule = BoardMovableRule.TopTilesMovable;
+    [Header("Which tiles can be picked")]
+    [Tooltip("TopTilesMovable = the usual rule (only uncovered tiles). BottomTilesMovable flips it.")]
+    [SerializeField] private BoardMovableRule movableRule;
 
-    [Header("Top & Stacking Orientation")]
-    [SerializeField] private BoardTopMode topMode = BoardTopMode.AutoFromSpawner;
-    [SerializeField] private bool invertTopDirection = false;
-    [Tooltip("Used when Top Mode = CustomDirection. Example: (0,0,-1) or (0,1,0).")]
+    [Header("What counts as 'on top'")]
+    [SerializeField] private BoardTopMode topMode;
+    [Tooltip("Flips which side is 'on top'.")]
+    [SerializeField] private bool invertTopDirection;
+    [Tooltip("Used by CustomDirection, e.g. (0,0,-1).")]
     [SerializeField] private Vector3 customTopDirection = Vector3.back;
-    [Tooltip("Used when Top Mode = TowardsTopReference. The tile closer to it is on top.")]
+    [Tooltip("Used by TowardsTopReference: the tile closer to this is on top.")]
     [SerializeField] private Transform topReferenceTransform;
 
-    [Header("Overlap Sensitivity")]
-    [Tooltip("0.999 = even a tiny overlap blocks the tile (side-by-side tiles at 1.0 do not).")]
+    [Header("Overlap")]
+    [Tooltip("In cells. 0.999 = even a tiny overlap covers the tile. Side-by-side tiles (exactly 1 apart) never do.")]
     [SerializeField] private float overlapThreshold = 0.999f;
     [SerializeField] private float minHeightDifference = 0.001f;
 
     private readonly List<Tile> tiles = new List<Tile>();
 
-    /// <summary>The tiles currently lying on the board (not in the tray).</summary>
+    // The tiles currently lying on the board (not in the tray).
     public IReadOnlyList<Tile> Tiles => tiles;
     public int RemainingTiles => tiles.Count;
 
@@ -56,12 +46,6 @@ public class TileBoardManager : Manager<TileBoardManager>
         TileTrayManager.tilePickedUp -= OnTilePickedUp;
     }
 
-    private void Start()
-    {
-        if (topMode == BoardTopMode.AutoFromSpawner && spawner == null) Debug.LogError("[BOARD] 'Spawner' is not assigned!", this);
-        if (topMode == BoardTopMode.TowardsTopReference && topReferenceTransform == null) Debug.LogError("[BOARD] 'Top Reference Transform' is not assigned!", this);
-    }
-
     private void OnBoardGenerated(List<Tile> generated)
     {
         tiles.Clear();
@@ -69,14 +53,14 @@ public class TileBoardManager : Manager<TileBoardManager>
         Rebuild();
     }
 
-    /// <summary>Undo: a tile is back on the board.</summary>
+    // Undo put a tile back on the board.
     public void ReturnTile(Tile tile)
     {
         tiles.Add(tile);
         Rebuild();
     }
 
-    /// <summary>Recalculates which tiles cover which. Call after tiles changed their spot (Shuffle).</summary>
+    // Works out again who covers whom. Call it whenever tiles changed their spot (Shuffle).
     public void Rebuild()
     {
         Vector3 axis = TopAxis();
@@ -92,21 +76,16 @@ public class TileBoardManager : Manager<TileBoardManager>
             for (int j = 0; j < tiles.Count; j++)
             {
                 if (i == j || !Covers(tiles[j], tiles[i], axis)) continue;
+
                 tiles[j].Covered.Add(tiles[i]);
                 tiles[i].CoverCount++;
             }
         }
 
-        bool anyFree = false;
-        foreach (Tile tile in tiles)
-        {
-            tile.SetBlocked(tile.CoverCount > 0);
-            anyFree |= tile.CoverCount == 0;
-        }
-
-        if (tiles.Count > 0 && !anyFree) Debug.LogError("[BOARD] ALL TILES ARE BLOCKED! Check Movable Rule / Top Mode / Invert Top Direction.", this);
+        foreach (Tile tile in tiles) tile.SetBlocked(tile.CoverCount > 0);
     }
 
+    // Picking a tile up uncovers the tiles that were lying under it.
     private void OnTilePickedUp(Tile tile)
     {
         tiles.Remove(tile);
@@ -117,6 +96,7 @@ public class TileBoardManager : Manager<TileBoardManager>
         }
     }
 
+    // True when 'upper' sits higher than 'lower' and their cells overlap.
     private bool Covers(Tile upper, Tile lower, Vector3 axis)
     {
         float height = Score(upper, axis) - Score(lower, axis);
@@ -143,7 +123,7 @@ public class TileBoardManager : Manager<TileBoardManager>
         return invertTopDirection ? -axis : axis;
     }
 
-    /// <summary>Uses the rest position, so it stays correct while tiles are animating.</summary>
+    // How high a tile is. Uses the resting position, so it stays right while tiles are animating.
     private float Score(Tile tile, Vector3 axis)
     {
         if (topMode == BoardTopMode.TowardsTopReference && topReferenceTransform != null)

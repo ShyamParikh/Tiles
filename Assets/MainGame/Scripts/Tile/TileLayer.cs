@@ -1,24 +1,26 @@
 using UnityEngine;
 
+// One painted grid of tiles. A level is a stack of these.
 [System.Serializable]
 public class TileLayer
 {
     public int width = 10;
     public int height = 10;
-    public Vector2 offset = Vector2.zero;
 
-    [Tooltip("If off, this layer uses the level's default (Base Layer Height for layer 1, Default Layer Shift for the rest).")]
-    public bool overrideShift = false;
-    [Tooltip("Layer 1: height of the base layer. Other layers: distance above the previous layer.")]
+    [Tooltip("Shifts the whole layer, in cells. Half a cell on upper layers gives the interlocking look.")]
+    public Vector2 offset;
+    [Tooltip("Off = this layer uses the level's default height.")]
+    public bool overrideShift;
+    [Tooltip("Layer 1: height of the base. Other layers: distance above the layer below.")]
     public float customShift = 0.3f;
 
     [HideInInspector] public bool[] grid;
 
-    public TileLayer(int w, int h)
+    public TileLayer(int width, int height)
     {
-        width = w;
-        height = h;
-        grid = new bool[w * h];
+        this.width = width;
+        this.height = height;
+        grid = new bool[width * height];
     }
 
     public bool GetCell(int x, int y)
@@ -35,6 +37,7 @@ public class TileLayer
     {
         int count = 0;
         if (grid == null) return count;
+
         foreach (bool cell in grid)
         {
             if (cell) count++;

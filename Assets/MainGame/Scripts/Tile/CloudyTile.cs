@@ -1,15 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-/// <summary>Hides its face behind a cloud until no tile covers it any more.</summary>
+// Hides its face behind a cloud until nothing is covering it any more.
 public class CloudyTile : Tile
 {
-    [Header("Face Cover")]
     [SerializeField] private TileFaceCover faceCover;
-
-    [Header("Cloudy Tile")]
-    [Tooltip("Off = once revealed it stays revealed. On = the cloud returns if the tile is covered again (Undo / Shuffle).")]
-    [SerializeField] private bool coverAgain = false;
+    [Tooltip("Off = once revealed it stays revealed. On = the cloud comes back if the tile gets covered again (Undo / Shuffle).")]
+    [SerializeField] private bool coverAgain;
     [SerializeField] private UnityEvent onRevealed;
 
     private bool revealed;
@@ -25,7 +22,8 @@ public class CloudyTile : Tile
 
     protected override void OnBlockedChanged(bool blocked)
     {
-        bool silent = firstUpdate;   // the first update only reports the starting state
+        // The very first update only tells us how the board started, so no reveal effect for it.
+        bool silent = firstUpdate;
         firstUpdate = false;
 
         if (blocked)
@@ -33,12 +31,12 @@ public class CloudyTile : Tile
             if (!coverAgain || !revealed) return;
             revealed = false;
             faceCover.Cover();
-            return;
         }
-
-        if (revealed) return;
-        revealed = true;
-        faceCover.Reveal();
-        if (!silent) onRevealed?.Invoke();
+        else if (!revealed)
+        {
+            revealed = true;
+            faceCover.Reveal();
+            if (!silent) onRevealed?.Invoke();
+        }
     }
 }

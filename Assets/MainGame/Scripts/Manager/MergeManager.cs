@@ -4,23 +4,23 @@ using com.otm.manager;
 using DG.Tweening;
 using UnityEngine;
 
-/// <summary>Merge animation: the 3 tiles lift, the outer two smash into the middle one, then all vanish.</summary>
+// The merge animation: the three tiles lift, the outer two smash into the middle one, then all vanish.
 public class TileMergeManager : Manager<TileMergeManager>
 {
     private const string TweenId = "TileMerge";
 
-    [Header("Up Merge")]
+    [Header("Lift")]
     [SerializeField] private float upDistance = 0.15f;
     [SerializeField] private float upDuration = 0.3f;
     [SerializeField] private Ease upEase = Ease.OutQuad;
-    [Tooltip("Direction the tiles lift in, in the tile's own axes.")]
+    [Tooltip("The direction tiles lift in, in the tile's own axes.")]
     [SerializeField] private Vector3 liftLocalDirection = Vector3.up;
 
-    [Header("Smash Merge")]
+    [Header("Smash")]
     [SerializeField] private float smashDuration = 0.3f;
     [SerializeField] private Ease smashEase = Ease.InQuad;
 
-    [Header("Merge Effects")]
+    [Header("Effects")]
     [SerializeField] private ParticleSystem mergeParticles;
     [SerializeField] private float particleLifetime = 2f;
 
@@ -57,10 +57,12 @@ public class TileMergeManager : Manager<TileMergeManager>
                 .SetEase(upEase)
                 .Bind(TweenId, tile.gameObject);
 
+            // One tween is enough to know when the lift is done.
             if (i == 0) tween.OnComplete(() => Smash(tiles));
         }
 
-        foreach (Tile tile in tiles) tile.NotifyMergeStarted(tiles);
+        // Let special tiles react (a merge burst tile asks for its extra merges here).
+        foreach (Tile tile in tiles) tile.OnMergeStarted(tiles);
     }
 
     private void Smash(List<Tile> tiles)
@@ -70,10 +72,10 @@ public class TileMergeManager : Manager<TileMergeManager>
 
         tiles[0].transform.DOMoveX(targetX, smashDuration).SetEase(smashEase).Bind(TweenId, tiles[0].gameObject);
         tiles[2].transform.DOMoveX(targetX, smashDuration).SetEase(smashEase).Bind(TweenId, tiles[2].gameObject)
-            .OnComplete(() => FinishMerge(tiles));
+            .OnComplete(() => Vanish(tiles));
     }
 
-    private void FinishMerge(List<Tile> tiles)
+    private void Vanish(List<Tile> tiles)
     {
         Vector3 center = tiles[1] != null ? tiles[1].transform.position : transform.position;
 

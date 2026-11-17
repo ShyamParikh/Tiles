@@ -1,24 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
-public enum TileColorMode
-{
-    MaterialInstance,   // each tinted tile gets its own material copy: colors can never be shared
-    PropertyBlock       // lighter, but some shaders / pipelines ignore it
-}
-
-/// <summary>Body colors, materials and blocked dimming of one tile. Plain class owned by Tile.</summary>
+// A tile's body colors and materials. Every tinted tile gets its own copy of the material,
+// so one tile's color can never leak onto another.
 public class TileBodyLook
 {
     private static readonly string[] FallbackProperties = { "_BaseColor", "_Color", "_TintColor", "_MainColor" };
+    private static bool warned;
 
+    // One renderer and everything needed to tint its material slots.
     private class Part
     {
         public MeshRenderer renderer;
-        public Material[] baseMaterials;
-        public Material[] instances;
-        public string[] properties;   // null entry = that slot has no color property
+        public Material[] baseMaterials;   // the shared materials, kept so they can be restored
+        public Material[] copies;          // our private copies, made the first time a color is needed
+        public string[] properties;        // color property per slot (null = that slot has none)
         public Color[] originals;
         public Color[] actives;
     }
@@ -26,56 +22,48 @@ public class TileBodyLook
     private readonly MeshRenderer body;
     private readonly List<MeshRenderer> extras;
     private readonly string preferredProperty;
-    private readonly TileColorMode mode;
     private readonly Color dimColor;
     private readonly Material[] originalMaterials;
-    private readonly ShadowCastingMode originalShadows;
-    private readonly MaterialPropertyBlock block = new MaterialPropertyBlock();
     private readonly List<Part> parts = new List<Part>();
 
-    private bool hasColor, blocked, warned, materialReplaced;
+    private bool hasColor, blocked, materialReplaced;
     private Color color;
     private int colorSlot = -1;
 
-    public TileBodyLook(MeshRenderer body, List<MeshRenderer> extras, string preferredProperty, TileColorMode mode, Color dimColor)
+    public TileBodyLook(MeshRenderer body, List<MeshRenderer> extras, string preferredProperty, Color dimColor)
     {
         this.body = body;
         this.extras = extras;
         this.preferredProperty = preferredProperty;
-        this.mode = mode;
         this.dimColor = dimColor;
-
-        if (body != null)
-        {
-            originalMaterials = body.sharedMaterials;
-            originalShadows = body.shadowCastingMode;
-        }
+        originalMaterials = body != null ? body.sharedMaterials : null;
         Build();
     }
 
+    // Tints one material slot, or every slot when slot is -1.
     public void SetColor(Color value, int slot = -1)
     {
         hasColor = true;
         color = value;
         colorSlot = slot;
 
-        bool targeted = false;
+        bool hit = false;
         foreach (Part part in parts)
         {
             for (int i = 0; i < part.properties.Length; i++)
             {
                 if (part.properties[i] == null) continue;
 
-                bool hit = slot < 0 || i == slot;
-                part.actives[i] = hit ? value : part.originals[i];
-                targeted |= hit;
+                bool targeted = slot < 0 || i == slot;
+                part.actives[i] = targeted ? value : part.originals[i];
+                hit |= targeted;
             }
         }
 
-        if (!targeted && !warned)
+        if (!hit && !warned)
         {
             warned = true;
-            Debug.LogWarning($"[TILE] Color requested for material slot {slot}, but it has no color property. Set 'Body Color Property' to your shader's exact property name (Shader Graph: the Reference name, Exposed ticked).", body);
+            Debug.LogWarning("[TILE] A color was set but the material has no color property. Set 'Body Color Property' to your shader's property name (Shader Graph: its Reference name, with Exposed ticked).", body);
         }
         Apply();
     }
@@ -90,7 +78,7 @@ public class TileBodyLook
         Apply();
     }
 
-    /// <summary>Replaces the body material in one slot (or all slots when slot is -1).</summary>
+    // Replaces the body material in one slot, or in every slot when slot is -1.
     public void SetMaterial(Material material, int slot = -1)
     {
         if (material == null || body == null) return;
@@ -107,14 +95,10 @@ public class TileBodyLook
             body.sharedMaterials = mats;
             materialReplaced = true;
         }
-        else
-        {
-            Debug.LogWarning($"[TILE] Material slot {slot} does not exist (body has {mats.Length}).", body);
-        }
         Rebuild();
     }
 
-    /// <summary>Puts back the prefab's own materials. Does nothing if no material was replaced.</summary>
+    // Puts the prefab's own materials back. Does nothing if none were replaced.
     public void ResetMaterial()
     {
         if (!materialReplaced || body == null) return;
@@ -131,32 +115,28 @@ public class TileBodyLook
         Apply();
     }
 
-    public void SetShadows(bool on)
-    {
-        if (body != null) body.shadowCastingMode = on ? originalShadows : ShadowCastingMode.Off;
-    }
-
-    /// <summary>Frees the per-tile material copies. Call when the tile is destroyed.</summary>
+    // Frees our material copies. Call when the tile is destroyed.
     public void Release()
     {
         Release(false);
     }
 
-    private void Release(bool restoreBase)
+    private void Release(bool restoreShared)
     {
         foreach (Part part in parts)
         {
-            if (part.instances == null) continue;
+            if (part.copies == null) continue;
 
-            if (restoreBase && part.renderer != null) part.renderer.sharedMaterials = part.baseMaterials;
-            foreach (Material instance in part.instances)
+            if (restoreShared && part.renderer != null) part.renderer.sharedMaterials = part.baseMaterials;
+            foreach (Material copy in part.copies)
             {
-                if (instance != null) Object.Destroy(instance);
+                if (copy != null) Object.Destroy(copy);
             }
-            part.instances = null;
+            part.copies = null;
         }
     }
 
+    // After the materials changed: read them again and re-apply the current color.
     private void Rebuild()
     {
         Build();
@@ -170,7 +150,7 @@ public class TileBodyLook
         AddPart(body);
         foreach (MeshRenderer extra in extras)
         {
-            if (extra != null && extra != body) AddPart(extra);
+            if (extra != body) AddPart(extra);
         }
     }
 
@@ -211,6 +191,7 @@ public class TileBodyLook
         return null;
     }
 
+    // Pushes the current color (and the dimming of covered tiles) onto the materials.
     private void Apply()
     {
         bool dim = blocked && dimColor != Color.white;
@@ -222,35 +203,12 @@ public class TileBodyLook
                 if (part.properties[i] == null) continue;
 
                 bool tinted = hasColor && (colorSlot < 0 || i == colorSlot);
-                Color shown = dim ? part.actives[i] * dimColor : part.actives[i];
+                if (!tinted && !dim && part.copies == null) continue;   // nothing to change, so no copy is needed
 
-                if (mode == TileColorMode.PropertyBlock) ApplyBlock(part, i, shown, tinted || dim);
-                else ApplyInstance(part, i, shown, tinted || dim);
+                // Renderer.materials hands out private copies of every material on the renderer.
+                if (part.copies == null) part.copies = part.renderer.materials;
+                part.copies[i].SetColor(part.properties[i], dim ? part.actives[i] * dimColor : part.actives[i]);
             }
         }
-    }
-
-    private void ApplyBlock(Part part, int slot, Color shown, bool overridden)
-    {
-        if (!overridden)
-        {
-            part.renderer.SetPropertyBlock(null, slot);
-            return;
-        }
-
-        part.renderer.GetPropertyBlock(block, slot);
-        block.SetColor(part.properties[slot], shown);
-        part.renderer.SetPropertyBlock(block, slot);
-    }
-
-    private void ApplyInstance(Part part, int slot, Color shown, bool overridden)
-    {
-        if (!overridden && part.instances == null) return;
-
-        // Renderer.materials clones every material and assigns the clones to this renderer.
-        if (part.instances == null) part.instances = part.renderer.materials;
-
-        Material instance = part.instances[slot];
-        if (instance != null) instance.SetColor(part.properties[slot], overridden ? shown : part.originals[slot]);
     }
 }

@@ -1,15 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-/// <summary>Shows a question mark until the tile moves into the tray, then reveals its face.</summary>
+// Shows a question mark until the tile moves into the tray, then reveals its face.
 public class QuestionTile : Tile
 {
-    [Header("Face Cover")]
     [SerializeField] private TileFaceCover faceCover;
-
-    [Header("Question Tile")]
-    [Tooltip("On = the question mark returns if Undo sends the tile back to the board.")]
-    [SerializeField] private bool hideAgainOnUndo = false;
+    [Tooltip("On = the question mark comes back if Undo sends the tile back to the board.")]
+    [SerializeField] private bool hideAgainOnUndo;
     [SerializeField] private UnityEvent onRevealed;
 
     private bool revealed;
@@ -24,6 +21,7 @@ public class QuestionTile : Tile
     protected override void OnEnteredTray()
     {
         if (revealed) return;
+
         revealed = true;
         faceCover.Reveal();
         onRevealed?.Invoke();
@@ -32,6 +30,7 @@ public class QuestionTile : Tile
     protected override void OnReturnedToBoard()
     {
         if (!hideAgainOnUndo || !revealed) return;
+
         revealed = false;
         faceCover.Cover();
     }

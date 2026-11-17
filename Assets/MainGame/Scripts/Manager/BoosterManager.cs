@@ -3,31 +3,31 @@ using System.Collections.Generic;
 using com.otm.manager;
 using UnityEngine;
 
-/// <summary>Entry point for all boosters: one at a time, tray locked while running, cancelled on restart / level end.</summary>
+// The one entry point for boosters. Only one runs at a time, the tray is locked while it runs,
+// and a restart or level end cancels it. The charge is only taken once the booster really worked.
 public class BoosterManager : Manager<BoosterManager>
 {
-    [Header("Scene References (Assign in Inspector)")]
+    [Header("Scene references")]
     [SerializeField] private TileGameManager gameManager;
     [SerializeField] private TileBoardManager boardManager;
     [SerializeField] private TileTrayManager trayManager;
     [SerializeField] private TileArrangementManager arrangementManager;
-    [Tooltip("Initialises the booster currencies and pays for purchases and coin use.")]
+    [Tooltip("Starts up the booster currencies and holds the coin currency.")]
     [SerializeField] private TileEconomyManager economyManager;
 
-    [Header("Boosters (Assign in Inspector)")]
+    [Header("Boosters")]
     [SerializeField] private List<BoosterBase> boosters = new List<BoosterBase>();
 
     public static Action<BoosterBase> boosterUsed;
-    [Tooltip("Fired when a booster is pressed with 0 stock and the player cannot pay its coin cost (open a shop popup from this).")]
+    // Pressed with 0 stock and not enough coins: a good moment to open your shop.
     public static Action<BoosterBase> boosterEmpty;
     public static Action<BoosterBase> boosterUnavailable;
     public static Action<BoosterBase, int> boosterPaidWithCoins;
     public static Action<BoosterBase> boosterPurchased;
     public static Action<BoosterBase> boosterPurchaseFailed;
-    public static Action<bool> busyChanged;
 
     private bool isBusy;
-    private int executionToken;
+    private int token;
 
     public bool IsBusy => isBusy;
     public TileBoardManager Board => boardManager;
@@ -48,39 +48,25 @@ public class BoosterManager : Manager<BoosterManager>
 
     private void Start()
     {
-        if (gameManager == null || boardManager == null || trayManager == null || arrangementManager == null)
-            Debug.LogError("[BOOSTER] Game, Board, Tray and Arrangement managers must be assigned!", this);
-
+        // The currencies must be started before the boosters listen to them.
         if (economyManager != null) economyManager.EnsureInitialized();
-        else Debug.LogWarning("[BOOSTER] No Economy Manager assigned: counts may not save, and coin use and purchases are impossible.", this);
-
-        foreach (BoosterBase booster in boosters)
-        {
-            if (booster != null) booster.Initialize(this);
-        }
+        boosters.ForEach(b => { if (b != null) b.Initialize(this); });
     }
 
     public BoosterBase GetBooster(BoosterType type)
     {
-        foreach (BoosterBase booster in boosters)
-        {
-            if (booster != null && booster.Type == type) return booster;
-        }
-        return null;
+        return boosters.Find(b => b != null && b.Type == type);
     }
 
-    public bool Use(BoosterType type)
-    {
-        return Use(GetBooster(type));
-    }
+    public bool Use(BoosterType type) { return Use(GetBooster(type)); }
 
-    /// <summary>Uses a booster. With a count of 0 it pays the booster's coin cost instead, if the player can afford it.</summary>
+    // With a count of 0 the booster is paid for with coins instead, if the player can afford it.
     public bool Use(BoosterBase booster)
     {
         if (booster == null || isBusy || !gameManager.IsPlaying || trayManager.IsLocked) return false;
 
-        bool payWithCoins = !booster.HasStock;
-        if (payWithCoins && !CanPayWithCoins(booster))
+        bool withCoins = !booster.HasStock;
+        if (withCoins && !CanPayWithCoins(booster))
         {
             boosterEmpty?.Invoke(booster);
             return false;
@@ -92,13 +78,13 @@ public class BoosterManager : Manager<BoosterManager>
         }
 
         SetBusy(true);
-        int token = ++executionToken;
+        int myToken = ++token;
 
         booster.Execute(success =>
         {
-            if (token != executionToken) return;   // cancelled by a restart or level end
+            if (myToken != token) return;   // cancelled by a restart or the end of the level
 
-            if (success) Pay(booster, payWithCoins);
+            if (success) Pay(booster, withCoins);
             SetBusy(false);
         });
         return true;
@@ -107,15 +93,14 @@ public class BoosterManager : Manager<BoosterManager>
     private bool CanPayWithCoins(BoosterBase booster)
     {
         return booster.AllowCoinUse && booster.CoinUseCost > 0 && economyManager != null
-            && economyManager.CanAfford(economyManager.CoinCurrency, booster.CoinUseCost);
+            && CurrencyOps.CanAfford(economyManager.CoinCurrency, booster.CoinUseCost);
     }
 
-    /// <summary>The charge is only taken once the booster really worked.</summary>
     private void Pay(BoosterBase booster, bool withCoins)
     {
         if (withCoins)
         {
-            economyManager.Spend(economyManager.CoinCurrency, booster.CoinUseCost);
+            CurrencyOps.Spend(economyManager.CoinCurrency, booster.CoinUseCost);
             boosterPaidWithCoins?.Invoke(booster, booster.CoinUseCost);
         }
         else
@@ -125,17 +110,14 @@ public class BoosterManager : Manager<BoosterManager>
         boosterUsed?.Invoke(booster);
     }
 
-    public bool Buy(BoosterType type)
-    {
-        return Buy(GetBooster(type));
-    }
+    public bool Buy(BoosterType type) { return Buy(GetBooster(type)); }
 
-    /// <summary>Pays the booster's own coin price and adds its purchase amount. Works in any game state.</summary>
+    // Pays the booster's own coin price and adds its purchase amount. Works in any game state.
     public bool Buy(BoosterBase booster)
     {
-        if (booster == null || economyManager == null) return false;
+        if (booster == null) return false;
 
-        if (!economyManager.Spend(economyManager.CoinCurrency, booster.CoinPrice))
+        if (economyManager == null || !CurrencyOps.Spend(economyManager.CoinCurrency, booster.CoinPrice))
         {
             boosterPurchaseFailed?.Invoke(booster);
             return false;
@@ -150,22 +132,18 @@ public class BoosterManager : Manager<BoosterManager>
     {
         isBusy = busy;
         trayManager.SetExternalLock(busy);
-        busyChanged?.Invoke(busy);
     }
 
     private void Cancel()
     {
-        executionToken++;
+        token++;
         if (isBusy) SetBusy(false);
     }
 
     private void OnLevelStarted(int levelNumber)
     {
         Cancel();
-        foreach (BoosterBase booster in boosters)
-        {
-            if (booster != null) booster.ResetForNewLevel();
-        }
+        boosters.ForEach(b => { if (b != null) b.ResetForNewLevel(); });
     }
 
     private void OnStateChanged(TileGameState state)

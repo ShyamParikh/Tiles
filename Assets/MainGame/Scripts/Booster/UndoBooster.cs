@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>Sends the last picked tile back from the tray to its board spot (remembers the last N picks).</summary>
+// Sends the last picked tile back from the tray to its spot on the board.
 public class UndoBooster : BoosterBase
 {
+    [Tooltip("How many of the latest picks can be undone.")]
     [SerializeField] private int maxUndoSteps = 6;
 
     private readonly List<Tile> history = new List<Tile>();
@@ -32,12 +33,13 @@ public class UndoBooster : BoosterBase
         if (history.Count > maxUndoSteps) history.RemoveAt(0);
     }
 
-    /// <summary>Merged tiles are gone and cannot be undone.</summary>
+    // Merged tiles are gone for good, so they can't be undone.
     private void OnMerged(List<Tile> group)
     {
-        foreach (Tile tile in group) history.Remove(tile);
+        group.ForEach(t => history.Remove(t));
     }
 
+    // Only tiles that are still sitting in the tray can be undone.
     private void Prune()
     {
         history.RemoveAll(t => t == null || t.Slot == null);
@@ -52,21 +54,15 @@ public class UndoBooster : BoosterBase
     public override void Execute(Action<bool> onFinished)
     {
         Prune();
-        if (history.Count == 0)
+        Tile tile = history.Count > 0 ? history[history.Count - 1] : null;
+
+        if (tile == null || !Manager.Tray.RemoveTile(tile))
         {
             onFinished(false);
             return;
         }
 
-        Tile tile = history[history.Count - 1];
-        history.RemoveAt(history.Count - 1);
-
-        if (!Manager.Tray.RemoveTile(tile))
-        {
-            onFinished(false);
-            return;
-        }
-
+        history.Remove(tile);
         Manager.Arrangement.ReturnTileToBoard(tile, () => onFinished(true));
         Manager.Board.ReturnTile(tile);
     }

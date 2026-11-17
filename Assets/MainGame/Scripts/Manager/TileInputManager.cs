@@ -1,30 +1,25 @@
 using System;
 using UnityEngine;
 
+// Turns mouse / touch into tile clicks.
 public class TileInputManager : MonoBehaviour
 {
     public static Action<Tile> tileClicked;
     public static Action<Tile> blockedTileClicked;
 
-    [Header("Scene References (Assign in Inspector)")]
+    [Header("Scene references")]
     [SerializeField] private Camera cam;
     [SerializeField] private TileGameManager gameManager;
-    [Tooltip("Input is ignored while a booster or tile effect has locked the tray.")]
+    [Tooltip("Input is ignored while a booster or tile effect has the tray locked.")]
     [SerializeField] private TileTrayManager trayManager;
     [SerializeField] private TileArrangementManager arrangementManager;
     [SerializeField] private Material selectOutlineMaterial;
 
-    [Header("Raycast Settings")]
+    [Header("Raycast")]
     [SerializeField] private LayerMask tileLayers = ~0;
     [SerializeField] private float maxRayDistance = 100f;
 
     private Tile current;
-
-    private void Start()
-    {
-        if (cam == null || gameManager == null || trayManager == null || arrangementManager == null)
-            Debug.LogError("[INPUT] Camera, Game Manager, Tray Manager and Arrangement Manager must be assigned!", this);
-    }
 
     private void Update()
     {
@@ -45,7 +40,7 @@ public class TileInputManager : MonoBehaviour
         return Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, tileLayers) ? Tile.FromCollider(hit.collider) : null;
     }
 
-    /// <summary>A covered tile wiggles instead of being selected.</summary>
+    // Pressing a covered tile wiggles it instead of selecting it.
     private void Press()
     {
         Tile tile = TileUnderPointer();

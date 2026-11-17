@@ -2,63 +2,42 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum TileBoardPlane
-{
-    XZ_Flat,
-    XY_Vertical
-}
+public enum TileBoardPlane { XZ_Flat, XY_Vertical }
+public enum GridSizingMode { Manual, FitToDimensions, FitToBoxCollider }
 
-public enum GridSizingMode
-{
-    Manual,
-    FitToDimensions,
-    FitToBoxCollider
-}
-
+// Turns a level asset into tiles on the board.
 public class TileVisualSpawner : MonoBehaviour
 {
     public static Action<List<Tile>> boardGenerated;
 
-    [Header("References")]
-    [Tooltip("Optional. Tiles will be grouped under this object.")]
+    [Tooltip("Optional. Tiles are created under this object.")]
     [SerializeField] private Transform boardRoot;
 
-    [Header("Level Data")]
+    [Header("Level")]
     [SerializeField] private TileLevelData levelAsset;
     [Tooltip("Leave off when TileGameManager loads the levels for you.")]
-    [SerializeField] private bool generateOnStart = false;
-
-    [Header("Randomisation")]
+    [SerializeField] private bool generateOnStart;
+    [Tooltip("Off = the same layout every load (decided by the level's seed).")]
     [SerializeField] private bool randomizePlacementEveryLoad = true;
 
-    [Header("Orientation & Stacking")]
+    [Header("Orientation & stacking")]
     [SerializeField] private TileBoardPlane boardPlane = TileBoardPlane.XY_Vertical;
     [SerializeField] private Vector3 tileRotation = Vector3.zero;
     [SerializeField] private bool invertStackingDirection = true;
-
-    [Header("Grid Sizing")]
-    [SerializeField] private GridSizingMode sizingMode = GridSizingMode.Manual;
-    [Header("  ↳ If Manual:")]
-    [SerializeField] private Vector2 manualTileSize = new Vector2(1f, 1.3f);
-    [SerializeField] private Vector2 manualGap = new Vector2(0.05f, 0.05f);
-    [Header("  ↳ If Fit To Dimensions:")]
-    [SerializeField] private Vector2 totalAreaDimensions = new Vector2(100f, 100f);
-    [Header("  ↳ If Fit To Box Collider:")]
-    [SerializeField] private BoxCollider targetBoundsBox;
-
-    [Header("Positioning")]
     [SerializeField] private bool centerBoard = true;
 
-    private struct TileCell
-    {
-        public int x, y, layer;
-    }
+    [Header("Grid sizing")]
+    [SerializeField] private GridSizingMode sizingMode = GridSizingMode.Manual;
+    [Tooltip("Manual: tile size and the gap between tiles.")]
+    [SerializeField] private Vector2 manualTileSize = new Vector2(1f, 1.3f);
+    [SerializeField] private Vector2 manualGap = new Vector2(0.05f, 0.05f);
+    [Tooltip("FitToDimensions: the whole board is stretched to this size.")]
+    [SerializeField] private Vector2 totalAreaDimensions = new Vector2(100f, 100f);
+    [Tooltip("FitToBoxCollider: the board is stretched to this collider (it is switched off afterwards so it can't block clicks).")]
+    [SerializeField] private BoxCollider targetBoundsBox;
 
-    private struct Assignment
-    {
-        public int faceId;
-        public string typeId;
-    }
+    private struct TileCell { public int x, y, layer; }
+    private struct Assignment { public int faceId; public string typeId; }
 
     private readonly List<Tile> spawnedTiles = new List<Tile>();
 
@@ -95,10 +74,9 @@ public class TileVisualSpawner : MonoBehaviour
         System.Random contentRng = new System.Random(seed);
         System.Random placementRng = new System.Random(randomizePlacementEveryLoad ? Guid.NewGuid().GetHashCode() : seed + 1);
 
+        // Only whole sets of 3 can be played, so a leftover cell or two is dropped.
         List<TileCell> cells = CollectCells(level);
         int usable = cells.Count / TileRules.SetSize * TileRules.SetSize;
-        if (usable != cells.Count)
-            Debug.LogWarning($"[SPAWNER] Level '{level.name}' has {cells.Count} tiles, not a multiple of {TileRules.SetSize}. The last {cells.Count - usable} are left out.", level);
         if (usable == 0) return;
 
         List<Assignment> assignments = BuildAssignments(level, library, usable, contentRng, placementRng);
@@ -114,13 +92,7 @@ public class TileVisualSpawner : MonoBehaviour
         for (int i = 0; i < assignments.Count; i++)
         {
             TileCell cell = cells[i];
-            Assignment assignment = assignments[i];
-            Tile prefab = library.GetTilePrefab(assignment.typeId);
-            if (prefab == null)
-            {
-                Debug.LogError($"[SPAWNER] No tile prefab for type '{assignment.typeId}'.", level);
-                continue;
-            }
+            Assignment a = assignments[i];
 
             Vector2 offset = level.layers[cell.layer].offset;
             Vector2 cellPosition = new Vector2(cell.x + offset.x, cell.y + offset.y);
@@ -128,12 +100,12 @@ public class TileVisualSpawner : MonoBehaviour
             float v = start.y + cellPosition.y * step.y;
             float stack = level.GetLayerStackPosition(cell.layer) * stackSign;
 
-            Tile tile = Instantiate(prefab, parent);
+            Tile tile = Instantiate(library.GetTilePrefab(a.typeId), parent);
             tile.transform.localPosition = boardPlane == TileBoardPlane.XZ_Flat ? new Vector3(u, stack, v) : new Vector3(u, -v, stack);
             tile.transform.localRotation = rotation;
-            tile.name = $"Tile_{cell.x}_{cell.y}_L{cell.layer}_F{assignment.faceId}";
-            tile.Init(assignment.faceId, library.GetFaceSprite(assignment.faceId), cell.layer, cellPosition);
-            tile.SetLevelLooks(level.ResolveBoardLook(assignment.faceId, assignment.typeId), level.ResolveTrayLook(assignment.faceId, assignment.typeId));
+            tile.name = $"Tile_{cell.x}_{cell.y}_L{cell.layer}_F{a.faceId}";
+            tile.Init(a.faceId, library.GetFaceSprite(a.faceId), cell.layer, cellPosition);
+            tile.SetLevelLooks(level.ResolveLook(a.faceId, a.typeId, false), level.ResolveLook(a.faceId, a.typeId, true));
 
             spawnedTiles.Add(tile);
         }
@@ -169,6 +141,7 @@ public class TileVisualSpawner : MonoBehaviour
         return max;
     }
 
+    // How far apart neighbouring cells are, in world units.
     private Vector2 StepSize(Vector2Int max)
     {
         if (sizingMode == GridSizingMode.Manual) return manualTileSize + manualGap;
@@ -176,11 +149,11 @@ public class TileVisualSpawner : MonoBehaviour
         if (targetBoundsBox == null) return Vector2.one;
 
         Vector3 size = Vector3.Scale(targetBoundsBox.size, targetBoundsBox.transform.lossyScale);
-        targetBoundsBox.enabled = false;   // measured; it must not intercept tile clicks
+        targetBoundsBox.enabled = false;
         return new Vector2(size.x / max.x, (boardPlane == TileBoardPlane.XZ_Flat ? size.z : size.y) / max.y);
     }
 
-    // ---------------- Face and tile type assignment ----------------
+    // ---------------- Which face and which tile type goes where ----------------
 
     private static List<Assignment> BuildAssignments(TileLevelData level, TileLibrary library, int total, System.Random contentRng, System.Random placementRng)
     {
@@ -195,21 +168,17 @@ public class TileVisualSpawner : MonoBehaviour
         return result;
     }
 
-    /// <summary>Fixed face counts first, then the rest in sets of 3 from the auto faces.</summary>
+    // Faces with a fixed count go first. The rest is filled in sets of 3 from the "auto" faces.
     private static List<int> BuildFaceList(TileLevelData level, TileLibrary library, int total, System.Random rng)
     {
-        List<FacePoolEntry> entries = new List<FacePoolEntry>();
-        foreach (FacePoolEntry entry in level.facePoolEntries)
-        {
-            if (entry != null && library.GetFaceSprite(entry.faceId) != null) entries.Add(entry);
-        }
+        List<FacePoolEntry> entries = level.facePoolEntries.FindAll(e => e != null && library.GetFaceSprite(e.faceId) != null);
         if (level.facePoolEntries.Count == 0)
         {
             foreach (int id in library.GetAllFaceIds()) entries.Add(new FacePoolEntry { faceId = id });
         }
         if (entries.Count == 0)
         {
-            Debug.LogError($"[SPAWNER] No valid faces with sprites found for level '{level.name}'.", level);
+            Debug.LogError($"[SPAWNER] No faces with a sprite found for level '{level.name}'.", level);
             return null;
         }
 
@@ -230,10 +199,7 @@ public class TileVisualSpawner : MonoBehaviour
         int sets = (total - faces.Count) / TileRules.SetSize;
         if (sets == 0) return faces;
 
-        if (autoIds.Count == 0)
-        {
-            foreach (FacePoolEntry entry in entries) autoIds.Add(entry.faceId);
-        }
+        if (autoIds.Count == 0) entries.ForEach(e => autoIds.Add(e.faceId));
         if (level.maxDifferentFaces > 0 && level.maxDifferentFaces < autoIds.Count)
         {
             TileRules.Shuffle(autoIds, rng);
@@ -249,7 +215,7 @@ public class TileVisualSpawner : MonoBehaviour
         return faces;
     }
 
-    /// <summary>Face locks first, then fixed tile-type counts, then the auto tile types.</summary>
+    // Face locks first, then fixed tile-type counts, then the auto types fill whatever is left.
     private static string[] AssignTypes(TileLevelData level, TileLibrary library, List<int> faces, System.Random contentRng, System.Random placementRng)
     {
         List<string> libraryIds = library.GetTileTypeIds();
@@ -259,11 +225,7 @@ public class TileVisualSpawner : MonoBehaviour
             return null;
         }
 
-        List<TilePoolEntry> pool = new List<TilePoolEntry>();
-        foreach (TilePoolEntry entry in level.tilePoolEntries)
-        {
-            if (entry != null && libraryIds.Contains(entry.tileTypeId)) pool.Add(entry);
-        }
+        List<TilePoolEntry> pool = level.tilePoolEntries.FindAll(e => e != null && libraryIds.Contains(e.tileTypeId));
         if (pool.Count == 0) pool.Add(new TilePoolEntry { tileTypeId = libraryIds[0] });
 
         string[] types = new string[faces.Count];
@@ -287,31 +249,19 @@ public class TileVisualSpawner : MonoBehaviour
                 continue;
             }
 
-            int quota = entry.tileCount - CountOf(types, entry.tileTypeId);
+            // Tiles already given this type through a face lock count towards its quota.
+            int quota = entry.tileCount - Array.FindAll(types, t => t == entry.tileTypeId).Length;
             for (int k = 0; k < quota && cursor < free.Count; k++) types[free[cursor++]] = entry.tileTypeId;
         }
 
-        if (autoTypes.Count == 0)
-        {
-            foreach (TilePoolEntry entry in pool) autoTypes.Add(entry.tileTypeId);
-        }
+        if (autoTypes.Count == 0) pool.ForEach(e => autoTypes.Add(e.tileTypeId));
 
         List<string> bag = new List<string>();
         while (cursor < free.Count) types[free[cursor++]] = Draw(bag, autoTypes, contentRng);
         return types;
     }
 
-    private static int CountOf(string[] types, string id)
-    {
-        int count = 0;
-        foreach (string type in types)
-        {
-            if (type == id) count++;
-        }
-        return count;
-    }
-
-    /// <summary>Takes the next item from a shuffled bag, refilling the bag from the source when empty.</summary>
+    // Takes the next item from a shuffled bag, refilling the bag from the source when it runs out.
     private static T Draw<T>(List<T> bag, List<T> source, System.Random rng)
     {
         if (bag.Count == 0)
@@ -328,8 +278,7 @@ public class TileVisualSpawner : MonoBehaviour
     private static int StableHash(string text)
     {
         int hash = 17;
-        if (string.IsNullOrEmpty(text)) return hash;
-        for (int i = 0; i < text.Length; i++) hash = unchecked(hash * 31 + text[i]);
+        foreach (char c in text) hash = unchecked(hash * 31 + c);
         return hash;
     }
 

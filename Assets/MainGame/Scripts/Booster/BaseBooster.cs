@@ -1,60 +1,48 @@
 using System;
 using com.otm.currency;
-using com.otm.utility;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public enum BoosterType
-{
-    Shuffle,
-    Undo,
-    AutoComplete
-}
+public enum BoosterType { Shuffle, Undo, AutoComplete }
 
-/// <summary>
-/// Base booster. How many the player owns is stored in a Currency asset. It refills only from the editor debugger
-/// or by buying with coins. With a count of 0 it can be used by paying coins instead.
-/// </summary>
+// The shared part of every booster. How many the player owns is a Currency asset, and it only goes up
+// through the debugger or a coin purchase. With a count of 0 the booster can be used by paying coins instead.
+// A real booster only has to write CanExecute and Execute.
 public abstract class BoosterBase : MonoBehaviour
 {
     [Header("Booster")]
-    [Tooltip("Currency asset that stores this booster's count (Default Value = starting amount). An infinite timer on it makes the booster free.")]
+    [Tooltip("The currency that stores this booster's count. Its Default Value is the starting stock. An infinite timer on it makes the booster free.")]
     [SerializeField] private Currency currency;
 
-    [Header("Count Display (Optional)")]
+    [Header("Count display (all optional)")]
     [SerializeField] private TMP_Text countText;
-    [Tooltip("Shown instead of the number while an infinite timer is running.")]
+    [Tooltip("Shown instead of the number while an infinite timer runs.")]
     [SerializeField] private string infiniteText = "INF";
-    [Tooltip("Shown only when the player has none left, e.g. the coin cost icon.")]
+    [Tooltip("Only visible when the player has none left, e.g. a coin cost icon.")]
     [SerializeField] private GameObject outOfStockObject;
-    [Tooltip("Also called with the count text, for sounds or animations.")]
+    [Tooltip("Also receives the count text, for sounds or animations.")]
     [SerializeField] private UnityEvent<string> onCountTextChanged;
 
-    [Header("Coin Use (when the booster count is 0)")]
-    [Tooltip("On = with no boosters left, pressing the booster pays coins instead.")]
+    [Header("Coin use (when the count is 0)")]
     [SerializeField] private bool allowCoinUse = true;
-    [Tooltip("Coins one use costs when the booster count is 0. 0 disables coin use.")]
+    [Tooltip("Coins one use costs. 0 turns coin use off.")]
     [SerializeField] private int coinUseCost = 50;
-    [Tooltip("Shows the coin cost of one use.")]
     [SerializeField] private TMP_Text coinUseCostText;
 
-    [Header("Shop (Optional)")]
+    [Header("Shop")]
     [Tooltip("Coins one purchase costs. Every booster has its own price.")]
     [SerializeField] private int coinPrice = 100;
     [Tooltip("How many boosters one purchase gives.")]
     [SerializeField] private int amountPerPurchase = 1;
-    [Tooltip("Shows the coin price of a purchase.")]
     [SerializeField] private TMP_Text priceText;
-    [Tooltip("Buys this booster with coins. The click listener is added automatically.")]
     [SerializeField] private Button buyButton;
 
-    [Header("UI (Optional)")]
-    [Tooltip("Uses the booster. The click listener is added automatically.")]
+    [Header("Use button")]
     [SerializeField] private Button button;
 
-    private bool registered;
+    private CurrencyWatcher watcher;
 
     public abstract BoosterType Type { get; }
     protected BoosterManager Manager { get; private set; }
@@ -66,27 +54,22 @@ public abstract class BoosterBase : MonoBehaviour
     public int AmountPerPurchase => amountPerPurchase;
     public int Count => currency != null ? currency.Value : 0;
     public bool IsInfinite => currency != null && currency.IsInfiniteOnGoing;
-    public bool HasStock => currency != null && (currency.IsInfiniteOnGoing || currency.Value > 0);
+    public bool HasStock => IsInfinite || Count > 0;
 
-    /// <summary>Called by BoosterManager after the currencies were initialised (Currency.Init resets its events).</summary>
-    public virtual void Initialize(BoosterManager manager)
+    // Called by BoosterManager once the currencies are initialised (Init wipes a currency's listeners).
+    public void Initialize(BoosterManager manager)
     {
         Manager = manager;
 
         if (currency == null)
         {
             Debug.LogError($"[BOOSTER] '{name}' has no Currency assigned!", this);
-        }
-        else if (!registered)
-        {
-            currency.OnCurrencyChange.RegisterEvent(OnCountChanged);
-            currency.OnInfiniteUpdate.RegisterEvent(OnInfiniteUpdated);
-            currency.OnInfiniteOver.RegisterEvent(RefreshUI);
-            registered = true;
+            return;
         }
 
-        Bind(button, OnUseClicked);
-        Bind(buyButton, OnBuyClicked);
+        watcher = new CurrencyWatcher(currency, RefreshUI);
+        if (button != null) button.onClick.AddListener(OnUseClicked);
+        if (buyButton != null) buyButton.onClick.AddListener(OnBuyClicked);
         if (priceText != null) priceText.text = coinPrice.ToString();
         if (coinUseCostText != null) coinUseCostText.text = coinUseCost.ToString();
         RefreshUI();
@@ -96,42 +79,14 @@ public abstract class BoosterBase : MonoBehaviour
     {
         if (button != null) button.onClick.RemoveListener(OnUseClicked);
         if (buyButton != null) buyButton.onClick.RemoveListener(OnBuyClicked);
-        if (!registered || currency == null) return;
-
-        currency.OnCurrencyChange.DeRegisterEvent(OnCountChanged);
-        currency.OnInfiniteUpdate.DeRegisterEvent(OnInfiniteUpdated);
-        currency.OnInfiniteOver.DeRegisterEvent(RefreshUI);
-        registered = false;
-    }
-
-    private static void Bind(Button target, UnityAction action)
-    {
-        if (target == null) return;
-        target.onClick.RemoveListener(action);
-        target.onClick.AddListener(action);
+        if (watcher != null) watcher.Dispose();
     }
 
     private void OnUseClicked() { Manager.Use(this); }
     private void OnBuyClicked() { Manager.Buy(this); }
-    private void OnCountChanged(int value) { RefreshUI(); }
-    private void OnInfiniteUpdated(TimeSpan remaining) { RefreshUI(); }
 
-    public void AddCount(int amount)
-    {
-        if (currency == null) return;
-
-        currency.Add(amount);
-        PlayerPrefsHelper.SaveData();
-    }
-
-    /// <summary>Uses one. Currency ignores spending while an infinite timer is active.</summary>
-    public void Consume()
-    {
-        if (currency == null) return;
-
-        currency.Add(-1);
-        PlayerPrefsHelper.SaveData();
-    }
+    public void AddCount(int amount) { CurrencyOps.Add(currency, amount); }
+    public void Consume() { CurrencyOps.Add(currency, -1); }
 
     private void RefreshUI()
     {
@@ -144,8 +99,9 @@ public abstract class BoosterBase : MonoBehaviour
 
     public virtual void ResetForNewLevel() { }
 
+    // Is there anything for the booster to do right now?
     public abstract bool CanExecute();
 
-    /// <summary>Runs the booster, then calls onFinished(true) when a charge was used or onFinished(false) if nothing happened.</summary>
+    // Do the work, then call onFinished(true) if a charge should be taken, or onFinished(false) if nothing happened.
     public abstract void Execute(Action<bool> onFinished);
 }

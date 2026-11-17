@@ -437,8 +437,8 @@ MonoBehaviour:
   facePool: 
   defaultWidth: 5
   defaultHeight: 1
-  baseLayerHeight: -15
-  defaultLayerShift: -25
+  baseLayerHeight: -30
+  defaultLayerShift: -90
   layers:
   - width: 5
     height: 1

@@ -1,26 +1,22 @@
 using System;
 using System.Collections.Generic;
 using com.otm.manager;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
-public enum TileGameState
-{
-    Loading,
-    Playing,
-    Won,
-    Lost
-}
+public enum TileGameState { Loading, Playing, Won, Lost }
 
+// The referee: loads levels, tracks the game state and decides when you win or lose.
 public class TileGameManager : Manager<TileGameManager>
 {
     [Header("Levels")]
     [SerializeField] private List<TileLevelData> levels = new List<TileLevelData>();
-    [Tooltip("On = after the last level start again from the first. Off = keep replaying the last level.")]
+    [Tooltip("On = start again from level 1 after the last one. Off = keep replaying the last level.")]
     [SerializeField] private bool loopLevels = true;
-    [Tooltip("Key used to save the level progress in LevelIndexHelper.")]
+    [Tooltip("Where the level progress is saved (LevelIndexHelper).")]
     [SerializeField] private string progressKey = "TileExplorer";
 
-    [Header("Scene Managers & References (Assign in Inspector)")]
+    [Header("Scene references")]
     [SerializeField] private TileVisualSpawner spawner;
     [SerializeField] private TileBoardManager boardManager;
     [SerializeField] private TileTrayManager trayManager;
@@ -32,12 +28,15 @@ public class TileGameManager : Manager<TileGameManager>
 
     private TileGameState state = TileGameState.Loading;
 
-    public TileGameState State => state;
     public bool IsPlaying => state == TileGameState.Playing;
-    public int CurrentLevelNumber => LevelIndexHelper.Instance.GetLevelNumber(progressKey);
-
-    /// <summary>The number of the level being played (or just finished), unaffected by progress saved on a win.</summary>
+    // The level being played (or just finished). Handy for UI text.
     public int PlayedLevelNumber { get; private set; }
+
+    private int SavedIndex
+    {
+        get { return LevelIndexHelper.Instance.GetLevelIndex(progressKey); }
+        set { LevelIndexHelper.Instance.SetLevelIndex(progressKey, Mathf.Max(0, value)); }
+    }
 
     private void OnEnable()
     {
@@ -53,62 +52,53 @@ public class TileGameManager : Manager<TileGameManager>
 
     private void Start()
     {
-        if (Time.timeScale <= 0f) Debug.LogError("[GAME] Time.timeScale is 0: DOTween animations will not run.", this);
         LoadCurrentLevel();
     }
 
     public void LoadCurrentLevel()
     {
-        if (levels.Count == 0 || spawner == null || boardManager == null || trayManager == null || arrangementManager == null || mergeManager == null)
-        {
-            Debug.LogError("[GAME] The Levels list or a scene reference on TileGameManager is missing!", this);
-            return;
-        }
-
         SetState(TileGameState.Loading);
         arrangementManager.KillAll();
         mergeManager.KillAll();
         trayManager.ResetTray();
 
-        PlayedLevelNumber = CurrentLevelNumber;
-        spawner.Generate(levels[LevelListIndex()]);
+        PlayedLevelNumber = LevelIndexHelper.Instance.GetLevelNumber(progressKey);
+        int index = loopLevels ? SavedIndex % levels.Count : Mathf.Min(SavedIndex, levels.Count - 1);
+        spawner.Generate(levels[index]);
+
         levelStarted?.Invoke(PlayedLevelNumber);
         arrangementManager.PlayFallIntro(new List<Tile>(spawner.SpawnedTiles), () => SetState(TileGameState.Playing));
     }
 
-    public void ForcePlayingState() { SetState(TileGameState.Playing); }
-
-    /// <summary>Replays the current level. After a win, the saved progress steps back so the level just won reloads.</summary>
+    [Button, EnableIf("@UnityEngine.Application.isPlaying")]
     public void RestartLevel()
     {
-        if (state == TileGameState.Won) ShiftSavedLevel(-1);
+        // A win already saved the progress, so step back to replay the level we just beat.
+        if (state == TileGameState.Won) SavedIndex--;
         LoadCurrentLevel();
     }
 
-    /// <summary>Goes to the next level. After a win the progress is already saved, so it only loads.</summary>
+    [Button, EnableIf("@UnityEngine.Application.isPlaying")]
     public void NextLevel()
     {
-        if (state != TileGameState.Won) ShiftSavedLevel(1);
+        // After a win the saved index already points at the next level.
+        if (state != TileGameState.Won) SavedIndex++;
         LoadCurrentLevel();
     }
 
-    private void ShiftSavedLevel(int amount)
+    // Testing helper: unlocks input if a level ever gets stuck in Loading.
+    [Button, EnableIf("@UnityEngine.Application.isPlaying")]
+    public void ForcePlayingState()
     {
-        int saved = LevelIndexHelper.Instance.GetLevelIndex(progressKey);
-        LevelIndexHelper.Instance.SetLevelIndex(progressKey, Mathf.Max(0, saved + amount));
+        SetState(TileGameState.Playing);
     }
 
-    private int LevelListIndex()
-    {
-        int saved = LevelIndexHelper.Instance.GetLevelIndex(progressKey);
-        return loopLevels ? saved % levels.Count : Mathf.Min(saved, levels.Count - 1);
-    }
-
+    // You win when nothing is left on the board or in the tray, and no merge is still playing.
     private void CheckWin()
     {
         if (state != TileGameState.Playing || boardManager.RemainingTiles > 0 || trayManager.TileCount > 0 || mergeManager.IsMerging) return;
 
-        ShiftSavedLevel(1);
+        SavedIndex++;
         SetState(TileGameState.Won);
     }
 
