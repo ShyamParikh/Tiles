@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 // The base tile: it knows its face, where it sits, whether it's covered, and how it looks.
 // Special tiles (cloudy, question mark...) inherit from this and override the hooks below.
@@ -27,8 +26,8 @@ public class Tile : MonoBehaviour
     [SerializeField] private MeshRenderer bodyRenderer;
     [Tooltip("Optional: other parts of the prefab that should get the color tint (they keep their own materials).")]
     [SerializeField] private List<MeshRenderer> extraBodyRenderers = new List<MeshRenderer>();
-    [Tooltip("The UI image that shows the face.")]
-    [SerializeField] private Image faceImage;
+    [Tooltip("The SpriteRenderer that shows the face. Make it a child of the tile, just in front of the body.")]
+    [SerializeField] private SpriteRenderer faceRenderer;
     [Tooltip("The collider that clicks hit.")]
     [SerializeField] private Collider col;
 
@@ -119,10 +118,10 @@ public class Tile : MonoBehaviour
         restPosition = transform.localPosition;
         restRotation = transform.localRotation;
 
-        if (faceImage != null)
+        if (faceRenderer != null)
         {
-            faceImage.sprite = faceSprite;
-            faceImage.enabled = faceSprite != null;
+            faceRenderer.sprite = faceSprite;
+            faceRenderer.enabled = faceSprite != null;
         }
         OnTileInitialized();
     }
@@ -160,7 +159,7 @@ public class Tile : MonoBehaviour
     public void SetBlocked(bool blocked)
     {
         isBlocked = blocked;
-        if (faceImage != null) faceImage.color = blocked ? blockedColor : Color.white;
+        if (faceRenderer != null) faceRenderer.color = blocked ? blockedColor : Color.white;
         look.SetBlocked(blocked);
         OnBlockedChanged(blocked);
     }

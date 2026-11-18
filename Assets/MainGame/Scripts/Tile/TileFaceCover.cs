@@ -1,15 +1,14 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
-// Swaps a tile's face image for a cover sprite (cloud, question mark) and back.
+// Swaps a tile's face sprite for a cover sprite (cloud, question mark) and back.
 // Cloudy and question tiles both use it, so the swapping is written once.
 [Serializable]
 public class TileFaceCover
 {
-    [Tooltip("The tile's face image (the same one the Tile uses).")]
-    [SerializeField] private Image faceImage;
-    [Tooltip("Shown instead of the face while hidden. Empty = the image is hidden completely.")]
+    [Tooltip("The tile's face SpriteRenderer (the same one the Tile uses).")]
+    [SerializeField] private SpriteRenderer faceRenderer;
+    [Tooltip("Shown instead of the face while hidden. Empty = the face is hidden completely.")]
     [SerializeField] private Sprite coverSprite;
 
     private Sprite faceSprite;
@@ -17,7 +16,7 @@ public class TileFaceCover
     // Remember the real face. Call this once, after the tile has its face.
     public void Capture()
     {
-        if (faceImage != null) faceSprite = faceImage.sprite;
+        if (faceRenderer != null) faceSprite = faceRenderer.sprite;
     }
 
     public void Cover() { Show(coverSprite); }
@@ -25,9 +24,9 @@ public class TileFaceCover
 
     private void Show(Sprite sprite)
     {
-        if (faceImage == null) return;
+        if (faceRenderer == null) return;
 
-        faceImage.sprite = sprite;
-        faceImage.enabled = sprite != null;
+        faceRenderer.sprite = sprite;
+        faceRenderer.enabled = sprite != null;
     }
 }
