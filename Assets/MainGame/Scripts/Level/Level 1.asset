@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
   m_Name: Level 1
   m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
-  library: {fileID: 11400000, guid: 063f1797a67b54562bc986bcd146af86, type: 2}
+  library: {fileID: 11400000, guid: 4e9a3e77f3b67384f964880d6623758b, type: 2}
   overrideDefaultTileColor: 0
   defaultTileColor: {r: 1, g: 1, b: 1, a: 1}
   targetMaterialSlot: -1
@@ -24,39 +24,6 @@ MonoBehaviour:
   overrideDefaultTrayMaterial: 0
   defaultTrayMaterial: {fileID: 0}
   facePoolEntries:
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 0
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 1
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 2
-    lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
@@ -156,270 +123,6 @@ MonoBehaviour:
     trayMaterial: {fileID: 0}
     faceId: 11
     lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 12
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 13
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 14
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 16
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 15
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 17
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 18
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 19
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 20
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 21
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 22
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 23
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 24
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 25
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 35
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 34
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 33
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 32
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 31
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 30
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 29
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 28
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 27
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 26
-    lockedTileTypeId: 
   tilePoolEntries:
   - tileCount: 0
     overrideColor: 0
@@ -431,6 +134,16 @@ MonoBehaviour:
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
     tileTypeId: Classic
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    tileTypeId: Normal
   maxDifferentFaces: 0
   seed: 0
   tileTypeId: 

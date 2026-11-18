@@ -1,0 +1,237 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a74cd9a16355c4cb194b38d6b691e81e, type: 3}
+  m_Name: PixelTileLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::TileLibrary
+  tileTypes:
+  - id: Normal
+    prefab: {fileID: 6724750909138396250, guid: 0dd8f57de99904c5abc94ec1a0e1e310, type: 3}
+  - id: Question
+    prefab: {fileID: 7785113519673179665, guid: 45f77481bfcb649b7a78a022e7a533ee, type: 3}
+  - id: Merge
+    prefab: {fileID: 699920129669268483, guid: 7eb34728288256b4bb48dfb44cd7c104, type: 3}
+  - id: Cloud
+    prefab: {fileID: 6219456597700143080, guid: 9737ddbfb6a104513abaff79a2ea55ce, type: 3}
+  faces:
+  - id: 0
+    displayName: Question
+    sprite: {fileID: 21300000, guid: 09297f44e7a0b3249b5b2cc891a5b381, type: 3}
+  - id: 1
+    displayName: Merge
+    sprite: {fileID: 21300000, guid: 5c08bbcce060bf24c8074d9f4d593e63, type: 3}
+  - id: 2
+    displayName: Cloudy
+    sprite: {fileID: 21300000, guid: 99bbc83bebbd36849b732a06e55ad60e, type: 3}
+  - id: 3
+    displayName: Weapons_Axe
+    sprite: {fileID: 21300000, guid: 8708d80070522a043a1ab6a2b2775382, type: 3}
+  - id: 4
+    displayName: Weapons_Club
+    sprite: {fileID: 21300000, guid: 06140cc248b05d2488fbb6493ce5fd11, type: 3}
+  - id: 5
+    displayName: Weapons_FishingRod
+    sprite: {fileID: 21300000, guid: 1959adfdc5c338840858eec9307f0184, type: 3}
+  - id: 6
+    displayName: Weapons_Pickaxe
+    sprite: {fileID: 21300000, guid: 45cfe68fb47a8514f96477d0fb432286, type: 3}
+  - id: 7
+    displayName: Weapons_Plow
+    sprite: {fileID: 21300000, guid: 72786b43084161c4c81e83eef0990e1a, type: 3}
+  - id: 8
+    displayName: Weapons_Spear
+    sprite: {fileID: 21300000, guid: bf28d1ab5e5c42e4aa2c9b729c09fce3, type: 3}
+  - id: 9
+    displayName: Weapons_Staff
+    sprite: {fileID: 21300000, guid: 3aa1cb26afcdc244bb3a95c193575ecb, type: 3}
+  - id: 10
+    displayName: Weapons_Sword
+    sprite: {fileID: 21300000, guid: b2f3327f47464544293b6b9018e1296e, type: 3}
+  - id: 11
+    displayName: Tool_WateringCan
+    sprite: {fileID: 21300000, guid: 8dfb7eb4494cbe14eabf0fda5056d27d, type: 3}
+  - id: 12
+    displayName: Valuables_Coin
+    sprite: {fileID: 21300000, guid: d2c0dc76eca05bb4eb4f3fc4a37f258d, type: 3}
+  - id: 13
+    displayName: Valuables_Crown
+    sprite: {fileID: 21300000, guid: f30c689e1cd8caa45a28c4947f382374, type: 3}
+  - id: 14
+    displayName: Valuables_Diamond
+    sprite: {fileID: 21300000, guid: 6b3b8ef492edc304f9230dc368e8af5c, type: 3}
+  - id: 15
+    displayName: Valuables_Ring
+    sprite: {fileID: 21300000, guid: ec3f5c9d06947e7458e9626551938feb, type: 3}
+  - id: 16
+    displayName: Castle
+    sprite: {fileID: 21300000, guid: 29a3d0bd681dee74485f9168cef7e5ec, type: 3}
+  - id: 17
+    displayName: Egg
+    sprite: {fileID: 21300000, guid: 14c5c48283a8eeb4098db89eda4a48ff, type: 3}
+  - id: 18
+    displayName: MagicEgg
+    sprite: {fileID: 21300000, guid: e0c7d5a920e98fd47a926292adc0bec7, type: 3}
+  - id: 19
+    displayName: Fire
+    sprite: {fileID: 21300000, guid: 80e159dab3e6f1142bc5062eb184ccaf, type: 3}
+  - id: 20
+    displayName: FireCamp
+    sprite: {fileID: 21300000, guid: 13597b049430824468ca1d48477afb9b, type: 3}
+  - id: 21
+    displayName: Fish
+    sprite: {fileID: 21300000, guid: 78040fcc3a5ca0646b20e131d68b3660, type: 3}
+  - id: 22
+    displayName: BlueArmy
+    sprite: {fileID: 21300000, guid: 9af35dcba929e4d4e864929c8597e626, type: 3}
+  - id: 23
+    displayName: RedArmy
+    sprite: {fileID: 21300000, guid: d394cd193965f51409c82f41da637c55, type: 3}
+  - id: 24
+    displayName: Glass
+    sprite: {fileID: 21300000, guid: 39c5835c5bc828148b44cdff45a30dd5, type: 3}
+  - id: 25
+    displayName: Heart
+    sprite: {fileID: 21300000, guid: 222d62d87db5931498bb85845842b0d3, type: 3}
+  - id: 26
+    displayName: Hat
+    sprite: {fileID: 21300000, guid: 5087bdcc637973d41abbd18802fb23d3, type: 3}
+  - id: 27
+    displayName: MagicEssence
+    sprite: {fileID: 21300000, guid: 8a14f58b4b600a24ab3fcf9cb3bc82fb, type: 3}
+  - id: 28
+    displayName: Potion
+    sprite: {fileID: 21300000, guid: db005d11213e5da47b9769c2e6c56eee, type: 3}
+  - id: 29
+    displayName: Scroll
+    sprite: {fileID: 21300000, guid: 60dbf6a31ffde4645b0ff2a518c88795, type: 3}
+  - id: 30
+    displayName: Sheep
+    sprite: {fileID: 21300000, guid: 6a6c98a6079537844ab0f7b2b45425b3, type: 3}
+  - id: 31
+    displayName: Wool
+    sprite: {fileID: 21300000, guid: a88d5300df9790349866dcad93d3a1ea, type: 3}
+  - id: 32
+    displayName: Chains
+    sprite: {fileID: 21300000, guid: 20326c3417635e54aa90c686a42a4875, type: 3}
+  - id: 33
+    displayName: WaterDrop
+    sprite: {fileID: 21300000, guid: 2092e1ae9910a3743a653ebf2e627c0c, type: 3}
+  - id: 34
+    displayName: Sand
+    sprite: {fileID: 21300000, guid: 45854289d4f5e5a418b189bc9b896389, type: 3}
+  - id: 35
+    displayName: Meat
+    sprite: {fileID: 21300000, guid: eab87f10d2afa594c92ed3d29451b618, type: 3}
+  - id: 36
+    displayName: Skull
+    sprite: {fileID: 21300000, guid: 1c84373cf4be81c44b97ce70ed9d78e6, type: 3}
+  - id: 37
+    displayName: GoldOre
+    sprite: {fileID: 21300000, guid: 87850260d0f08224e887e1c55590c081, type: 3}
+  - id: 38
+    displayName: DiamondOre
+    sprite: {fileID: 21300000, guid: d9c7df35c6600dd42b897ce1d9ae898b, type: 3}
+  - id: 39
+    displayName: Harpoon
+    sprite: {fileID: 21300000, guid: 3f40ae8170066bb4d8280a58328eaa8f, type: 3}
+  - id: 40
+    displayName: Hook
+    sprite: {fileID: 21300000, guid: cce7f5ea931569049963cde10e4e5d77, type: 3}
+  - id: 41
+    displayName: Phone
+    sprite: {fileID: 21300000, guid: ab13573ac7c44714d9eee118f1c540d5, type: 3}
+  - id: 42
+    displayName: Tape
+    sprite: {fileID: 21300000, guid: 40c498d119203b24f871fd46978c7b48, type: 3}
+  - id: 43
+    displayName: Coin
+    sprite: {fileID: 21300000, guid: 99af61578a2317c449e29344b2b17479, type: 3}
+  - id: 44
+    displayName: Crate
+    sprite: {fileID: 21300000, guid: 68a41ff097730fb45a9b2adce184a79d, type: 3}
+  - id: 45
+    displayName: BigTable
+    sprite: {fileID: 21300000, guid: e11c6e74230e7c840a3fbcf8989cb499, type: 3}
+  - id: 46
+    displayName: SmallTable
+    sprite: {fileID: 21300000, guid: 6f082b6ddb44f9745a815afaaf44245a, type: 3}
+  - id: 47
+    displayName: Food_Kabab
+    sprite: {fileID: 21300000, guid: 4634d87584aafe546b622ae2f6e5b9ac, type: 3}
+  - id: 48
+    displayName: Food_ChickenWings
+    sprite: {fileID: 21300000, guid: 43c7cd3796487a540973573009a6817f, type: 3}
+  - id: 49
+    displayName: Food_HakkaNoodles
+    sprite: {fileID: 21300000, guid: 1fc7d2784f39bca4e9158ea31427d79a, type: 3}
+  - id: 50
+    displayName: Food_SchezwanNoodles
+    sprite: {fileID: 21300000, guid: 67d91650448db8d4f8c2761c114467a6, type: 3}
+  - id: 51
+    displayName: Food_PestoPizza
+    sprite: {fileID: 21300000, guid: 3dc9277b4d7254c4bb24a43248eea086, type: 3}
+  - id: 52
+    displayName: Food_PeperoniPizza
+    sprite: {fileID: 21300000, guid: c5efe437a3425564a9021a187d541e46, type: 3}
+  - id: 53
+    displayName: Pumpkin
+    sprite: {fileID: 21300000, guid: b398f31984f975d439ad74fd48570d89, type: 3}
+  - id: 54
+    displayName: Gourd
+    sprite: {fileID: 21300000, guid: 157cb9b2c093a584fba187ec8d423718, type: 3}
+  - id: 55
+    displayName: Grass
+    sprite: {fileID: 21300000, guid: 3d9791791d28a9745b616ce8d8113662, type: 3}
+  - id: 56
+    displayName: Potato
+    sprite: {fileID: 21300000, guid: a8343aa03d794694799a54194fab3f04, type: 3}
+  - id: 57
+    displayName: Strawberry
+    sprite: {fileID: 21300000, guid: 72dee83beb5760f49ae1ee546c10eb94, type: 3}
+  - id: 58
+    displayName: Ground
+    sprite: {fileID: 21300000, guid: 6b558f4b6b6cf9447a39de0812a0a3cf, type: 3}
+  - id: 59
+    displayName: SpikeBall
+    sprite: {fileID: 21300000, guid: a2d68081d156f704bb974b65c4ba11c6, type: 3}
+  - id: 60
+    displayName: Crow
+    sprite: {fileID: 21300000, guid: 7ed863ccbdc96f0438cc78a3c684e3e0, type: 3}
+  - id: 61
+    displayName: Barrel
+    sprite: {fileID: 21300000, guid: 550b6b4837f3a04499627c35f65670ca, type: 3}
+  - id: 62
+    displayName: Dustbin
+    sprite: {fileID: 21300000, guid: 5f29f64548d98f64893d01b0b4c02f3b, type: 3}
+  - id: 63
+    displayName: Table
+    sprite: {fileID: 21300000, guid: fe7a23deba9c59f4982966f8b75d0c41, type: 3}
+  - id: 64
+    displayName: Man
+    sprite: {fileID: 21300000, guid: 4ae49494a73ff584099f601cb159abba, type: 3}
+  - id: 65
+    displayName: BaldMan
+    sprite: {fileID: 21300000, guid: 8192c590fb896e8478742bc3423292c3, type: 3}
+  - id: 66
+    displayName: Woman
+    sprite: {fileID: 21300000, guid: 48cd8048939cc274dae16a9493829244, type: 3}
+  - id: 67
+    displayName: DarkWizard
+    sprite: {fileID: 21300000, guid: 31b17986fa5b13f4f9b7403589287a19, type: 3}
+  - id: 68
+    displayName: LightWizard
+    sprite: {fileID: 21300000, guid: 4836c09be31426e49b52ea966be0a3c8, type: 3}
+  - id: 69
+    displayName: Dragon
+    sprite: {fileID: 21300000, guid: 4574f971d70a83c41ade6083ada1035a, type: 3}
+  - id: 70
+    displayName: Troll
+    sprite: {fileID: 21300000, guid: 07f23995d5720bd4d9cd266799cef6fb, type: 3}

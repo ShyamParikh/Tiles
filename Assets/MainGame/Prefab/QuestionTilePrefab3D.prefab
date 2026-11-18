@@ -26,8 +26,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1284371001806265376}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.005}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5231170621267464068}
@@ -94,7 +94,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: f811485c53126ef4ab155a91c77564e6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 09297f44e7a0b3249b5b2cc891a5b381, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -188,7 +188,7 @@ MonoBehaviour:
   CoverCount: 0
   faceCover:
     faceRenderer: {fileID: 5740183978299251421}
-    coverSprite: {fileID: 21300000, guid: 849364f97161b4dddb47b1b8271ba195, type: 3}
+    coverSprite: {fileID: 21300000, guid: 09297f44e7a0b3249b5b2cc891a5b381, type: 3}
   hideAgainOnUndo: 0
   onRevealed:
     m_PersistentCalls:
@@ -249,7 +249,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -294,7 +294,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 119
 --- !u!1001 &1487786216616081444
 PrefabInstance:
   m_ObjectHideFlags: 0

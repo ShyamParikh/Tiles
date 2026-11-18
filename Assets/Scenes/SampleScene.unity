@@ -5287,10 +5287,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TileMergeManager
   upDistance: 0.15
-  upDuration: 0.3
+  upDuration: 0.1
   upEase: 6
   liftLocalDirection: {x: 0, y: 1, z: 0}
-  smashDuration: 0.3
+  smashDuration: 0.1
   smashEase: 5
   mergeParticles: {fileID: 0}
   particleLifetime: 2
