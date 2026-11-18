@@ -1,11 +1,25 @@
+/*
+ * TileLevelData
+ * -------------
+ * One level, as an asset: the tile library, the painted grid layers, which faces and tile types appear (and
+ * how many of each), and how tiles look. Counts must be multiples of 3, and 0 means "fill automatically".
+ * A face can be locked to one tile type. Looks come from a priority chain: the face entry first, then the tile
+ * type entry, then the level default, then the prefab's own look. Every entry has a board look and a tray
+ * look (the tray look applies when the tile reaches a tray slot). The seed keeps the random picks stable.
+ * New level assets start with Base Layer Height -30 and Default Layer Shift -90 (right-click the asset and
+ * choose "Reset Stacking To Defaults" for older ones). TileLevelEditor draws this asset,
+ * TileVisualSpawner builds the board from it, and TileGameManager picks which level to play.
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// What a face or a tile type wants for the level: how many tiles, and how they look on the board and in the tray.
+// What a face or a tile type wants for the level: a tile count, and how it looks on the board and in the tray.
 [Serializable]
 public class PoolEntry
 {
+    #region Public Variables
+
     [Tooltip("Exact tile count (a multiple of 3 for faces). 0 = fill the remaining spots automatically.")]
     public int tileCount;
 
@@ -19,38 +33,53 @@ public class PoolEntry
     public bool trayOverrideMaterial;
     public Material trayMaterial;
 
+    #endregion
+
+    #region Looks
+
     // The material this entry wants (null = no opinion).
     public Material MaterialFor(bool tray)
     {
         return tray ? (trayOverrideMaterial ? trayMaterial : null) : (overrideMaterial ? tileMaterial : null);
     }
 
-    // True when this entry wants to set the color.
+    // True when this entry wants to set the color, and gives it back.
     public bool ColorFor(bool tray, out Color color)
     {
         color = tray ? trayColor : tileColor;
         return tray ? trayOverrideColor : overrideColor;
     }
+
+    #endregion
 }
 
 [Serializable]
 public class FacePoolEntry : PoolEntry
 {
+    #region Public Variables
+
     public int faceId;
     [Tooltip("Optional: this face always uses this Tile Type ID. Empty = use the Tile Pool.")]
     public string lockedTileTypeId = "";
+
+    #endregion
 }
 
 [Serializable]
 public class TilePoolEntry : PoolEntry
 {
+    #region Public Variables
+
     public string tileTypeId;
+
+    #endregion
 }
 
-// One level: the grid, which faces and tile types appear, and how tiles look.
 [CreateAssetMenu(fileName = "NewVisualLevel", menuName = "Tile/Visual Level Data")]
 public class TileLevelData : ScriptableObject
 {
+    #region Public Variables
+
     // New level assets start with these stacking values. Existing assets keep whatever they already have.
     public const float DefaultBaseLayerHeight = -30f;
     public const float DefaultLayerShiftValue = -90f;
@@ -89,25 +118,21 @@ public class TileLevelData : ScriptableObject
     public float defaultLayerShift = DefaultLayerShiftValue;
     public List<TileLayer> layers = new List<TileLayer>();
 
+    #endregion
+
+    #region Unity Callbacks
+
+    // Keeps old assets converted whenever the asset changes in the inspector.
     private void OnValidate()
     {
         MigrateLegacyData();
     }
 
-    // Right-click the asset to put an existing level back on the default stacking values.
-    [ContextMenu("Reset Stacking To Defaults")]
-    private void ResetStacking()
-    {
-#if UNITY_EDITOR
-        UnityEditor.Undo.RecordObject(this, "Reset Stacking To Defaults");
-#endif
-        baseLayerHeight = DefaultBaseLayerHeight;
-        defaultLayerShift = DefaultLayerShiftValue;
-#if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-#endif
-    }
+    #endregion
 
+    #region Legacy Conversion
+
+    // Turns the old single tile type and face id list into pool entries.
     public void MigrateLegacyData()
     {
         bool changed = false;
@@ -131,8 +156,19 @@ public class TileLevelData : ScriptableObject
 #endif
     }
 
+    #endregion
+
+    #region Pool Lookups
+
+    // The entry for this face id (null if the face is not in the pool).
     public FacePoolEntry GetFaceEntry(int id) { return facePoolEntries.Find(e => e != null && e.faceId == id); }
+
+    // The entry for this tile type id (null if the type is not in the pool).
     public TilePoolEntry GetTileEntry(string id) { return tilePoolEntries.Find(e => e != null && e.tileTypeId == id); }
+
+    #endregion
+
+    #region Look Resolving
 
     // What a tile should look like on the board (tray = false) or in the tray (tray = true).
     public TileLookSpec ResolveLook(int faceId, string typeId, bool tray)
@@ -171,6 +207,11 @@ public class TileLevelData : ScriptableObject
         };
     }
 
+    #endregion
+
+    #region Layers And Stacking
+
+    // Adds an empty layer, using the base height for the first one and the default shift for the rest.
     public void AddLayer()
     {
         TileLayer layer = new TileLayer(defaultWidth, defaultHeight);
@@ -178,6 +219,7 @@ public class TileLevelData : ScriptableObject
         layers.Add(layer);
     }
 
+    // The shift of one layer: its own value if it overrides, otherwise the level default.
     public float GetLayerShift(int index)
     {
         if (index < 0 || index >= layers.Count) return 0f;
@@ -185,7 +227,7 @@ public class TileLevelData : ScriptableObject
         return index == 0 ? baseLayerHeight : defaultLayerShift;
     }
 
-    // Height of a layer = every shift up to and including it.
+    // The height of a layer: every shift up to and including it.
     public float GetLayerStackPosition(int index)
     {
         float total = 0f;
@@ -193,6 +235,7 @@ public class TileLevelData : ScriptableObject
         return total;
     }
 
+    // How many tiles are painted across all layers.
     public int CountTiles()
     {
         int total = 0;
@@ -202,4 +245,20 @@ public class TileLevelData : ScriptableObject
         }
         return total;
     }
+
+    // Right-click menu: puts an existing level back on the default stacking values.
+    [ContextMenu("Reset Stacking To Defaults")]
+    private void ResetStacking()
+    {
+#if UNITY_EDITOR
+        UnityEditor.Undo.RecordObject(this, "Reset Stacking To Defaults");
+#endif
+        baseLayerHeight = DefaultBaseLayerHeight;
+        defaultLayerShift = DefaultLayerShiftValue;
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+    }
+
+    #endregion
 }

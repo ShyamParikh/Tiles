@@ -1,9 +1,18 @@
+/*
+ * TileLayer
+ * ---------
+ * One painted grid of tiles. A level is a stack of these. It stores which cells hold a tile (grid), the
+ * layer's size, an offset in cells (half a cell on upper layers gives the interlocking look), and an optional
+ * own height (overrideShift + customShift). TileLevelEditor paints the grid, TileVisualSpawner reads it,
+ * and TileLevelData works out the layer's height from the shifts.
+ */
 using UnityEngine;
 
-// One painted grid of tiles. A level is a stack of these.
 [System.Serializable]
 public class TileLayer
 {
+    #region Public Variables
+
     public int width = 10;
     public int height = 10;
 
@@ -16,6 +25,11 @@ public class TileLayer
 
     [HideInInspector] public bool[] grid;
 
+    #endregion
+
+    #region Setup
+
+    // Creates an empty layer of the given size.
     public TileLayer(int width, int height)
     {
         this.width = width;
@@ -23,16 +37,23 @@ public class TileLayer
         grid = new bool[width * height];
     }
 
+    #endregion
+
+    #region Cells
+
+    // Is there a tile at this cell? Cells outside the grid are always empty.
     public bool GetCell(int x, int y)
     {
         return x >= 0 && x < width && y >= 0 && y < height && grid[y * width + x];
     }
 
+    // Puts a tile on (or takes it off) this cell.
     public void SetCell(int x, int y, bool value)
     {
         if (x >= 0 && x < width && y >= 0 && y < height) grid[y * width + x] = value;
     }
 
+    // How many cells of this layer hold a tile.
     public int CountCells()
     {
         int count = 0;
@@ -44,4 +65,6 @@ public class TileLayer
         }
         return count;
     }
+
+    #endregion
 }

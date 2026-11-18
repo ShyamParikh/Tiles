@@ -1,24 +1,31 @@
+/*
+ * Tile
+ * ----
+ * The base tile. It knows its face id, its layer and cell, the tiles it covers and how many tiles cover it,
+ * which tray slot it sits in, and how it looks. Looks are handled by TileBodyLook: the body material and color
+ * come from the prefab's inspector or from the level (a board look and a tray look), covered tiles are dimmed,
+ * and the face is a SpriteRenderer child. A click finds its tile through FromCollider.
+ * Special tiles (Cloudy, Question, MergeBurst) inherit from this and only override the hooks at the bottom;
+ * they must not define Awake or OnDestroy themselves. The tile does no movement: TileArrangementManager
+ * animates it, TileBoardManager writes Covered / CoverCount, and TileTrayManager decides when it is picked up.
+ */
 using System.Collections.Generic;
 using UnityEngine;
 
-// The base tile: it knows its face, where it sits, whether it's covered, and how it looks.
-// Special tiles (cloudy, question mark...) inherit from this and override the hooks below.
-// Don't write Awake or OnDestroy in a subclass, the hooks are enough.
 public class Tile : MonoBehaviour
 {
+    #region Public Variables
+
+    // The tiles lying under this one, and how many tiles cover it. TileBoardManager keeps these up to date.
+    public readonly List<Tile> Covered = new List<Tile>();
+    public int CoverCount;
+
+    #endregion
+
+    #region Private Variables
+
     // A raycast hits a collider, so this is how a click finds its tile.
     private static readonly Dictionary<Collider, Tile> byCollider = new Dictionary<Collider, Tile>();
-
-    public static Tile FromCollider(Collider collider)
-    {
-        return byCollider.ContainsKey(collider) ? byCollider[collider] : null;
-    }
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetStatics()
-    {
-        byCollider.Clear();
-    }
 
     [Header("References")]
     [Tooltip("The mesh child that draws the tile body.")]
@@ -46,10 +53,6 @@ public class Tile : MonoBehaviour
     [Tooltip("Color property of the body material. URP Lit = _BaseColor, built-in = _Color. Shader Graph: its Reference name (Exposed).")]
     [SerializeField] private string bodyColorProperty = "_BaseColor";
 
-    // The tiles lying under this one, and how many tiles cover it. TileBoardManager keeps these up to date.
-    public readonly List<Tile> Covered = new List<Tile>();
-    public int CoverCount;
-
     private TileBodyLook look;
     private int faceId;
     private int layerIndex;
@@ -65,6 +68,10 @@ public class Tile : MonoBehaviour
     private TileLookSpec boardLook;   // what the level wants on the board
     private TileLookSpec trayLook;    // what the level wants once the tile is in the tray
 
+    #endregion
+
+    #region Properties
+
     public int FaceId => faceId;
     public int LayerIndex => layerIndex;
     public Vector2 CellPosition => cellPosition;
@@ -74,21 +81,32 @@ public class Tile : MonoBehaviour
     public Quaternion RestLocalRotation => restRotation;
     public Vector3 TrayScale => trayScale;
     public Vector3 BoardScale => boardScale;
-
     public TileSpot Spot => new TileSpot { layer = layerIndex, cell = cellPosition, position = restPosition, rotation = restRotation };
 
     private bool HasTrayLook => trayLook.material != null || trayLook.hasColor;
 
-    // ---------------- Hooks for special tiles ----------------
+    #endregion
 
-    protected virtual void OnTileInitialized() { }
-    protected virtual void OnBlockedChanged(bool blocked) { }
-    protected virtual void OnEnteredTray() { }
-    protected virtual void OnReturnedToBoard() { }
-    public virtual void OnMergeStarted(List<Tile> group) { }
+    #region Static Helpers
 
-    // ---------------- Unity ----------------
+    // Finds the tile that owns a collider (null if there is none).
+    public static Tile FromCollider(Collider collider)
+    {
+        return byCollider.ContainsKey(collider) ? byCollider[collider] : null;
+    }
 
+    // Clears the lookup when entering Play Mode without a domain reload.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        byCollider.Clear();
+    }
+
+    #endregion
+
+    #region Unity Callbacks
+
+    // Sets up the body look and registers the collider for clicks.
     protected virtual void Awake()
     {
         look = new TileBodyLook(bodyRenderer, extraBodyRenderers, bodyColorProperty, tintBodyWhenBlocked ? blockedColor : Color.white);
@@ -98,6 +116,7 @@ public class Tile : MonoBehaviour
         else byCollider[col] = this;
     }
 
+    // Frees the material copies and unregisters the collider.
     private void OnDestroy()
     {
         if (col != null) byCollider.Remove(col);
@@ -105,7 +124,9 @@ public class Tile : MonoBehaviour
         Deselect();
     }
 
-    // ---------------- Setup and look ----------------
+    #endregion
+
+    #region Setup And Look
 
     // Called by the spawner right after the tile is created.
     public void Init(int newFaceId, Sprite faceSprite, int layer, Vector2 cell)
@@ -148,14 +169,18 @@ public class Tile : MonoBehaviour
         else look.ClearColor();
     }
 
+    // Applies the level's tray look once the tile is in a slot.
     private void ApplyTrayLook()
     {
         if (trayLook.material != null) look.SetMaterial(trayLook.material, trayLook.materialSlot);
         if (trayLook.hasColor) look.SetColor(trayLook.color, trayLook.colorSlot);
     }
 
-    // ---------------- Board and tray state ----------------
+    #endregion
 
+    #region Board And Tray State
+
+    // Marks the tile as covered (dimmed) or free.
     public void SetBlocked(bool blocked)
     {
         isBlocked = blocked;
@@ -164,6 +189,7 @@ public class Tile : MonoBehaviour
         OnBlockedChanged(blocked);
     }
 
+    // Puts the tile in a tray slot (or takes it out with null).
     public void SetSlot(TraySlot newSlot)
     {
         bool entering = slot == null && newSlot != null;
@@ -192,6 +218,7 @@ public class Tile : MonoBehaviour
         OnReturnedToBoard();
     }
 
+    // Gives the tile a new resting spot on the board (used by Shuffle).
     public void SetSpot(TileSpot spot)
     {
         layerIndex = spot.layer;
@@ -200,6 +227,7 @@ public class Tile : MonoBehaviour
         restRotation = spot.rotation;
     }
 
+    // Snaps the tile back to its exact board position, rotation and size.
     public void RestoreBoardTransform()
     {
         transform.localPosition = restPosition;
@@ -207,16 +235,20 @@ public class Tile : MonoBehaviour
         transform.localScale = boardScale;
     }
 
+    // Remembers / restores the finished size of the tile inside the tray.
     public void RecordTrayScale() { trayScale = transform.localScale; }
     public void RestoreTrayScale() { transform.localScale = trayScale; }
 
+    // Makes the tile unclickable.
     public void DisableInteraction()
     {
         if (col != null) col.enabled = false;
         Deselect();
     }
 
-    // ---------------- Selection outline ----------------
+    #endregion
+
+    #region Selection Outline
 
     // A copy of the body mesh with the outline material, shown while the pointer is over the tile.
     public void Select(Material outlineMaterial)
@@ -237,9 +269,31 @@ public class Tile : MonoBehaviour
         outlineRenderer.receiveShadows = false;
     }
 
+    // Removes the outline.
     public void Deselect()
     {
         if (outline != null) Destroy(outline);
         outline = null;
     }
+
+    #endregion
+
+    #region Overridable Hooks
+
+    // The tile was created and has its face.
+    protected virtual void OnTileInitialized() { }
+
+    // The tile became covered or free.
+    protected virtual void OnBlockedChanged(bool blocked) { }
+
+    // The tile started moving into a tray slot.
+    protected virtual void OnEnteredTray() { }
+
+    // Undo sent the tile back to the board.
+    protected virtual void OnReturnedToBoard() { }
+
+    // The set this tile belongs to started merging.
+    public virtual void OnMergeStarted(List<Tile> group) { }
+
+    #endregion
 }

@@ -1,13 +1,23 @@
+/*
+ * TileArrangementManager
+ * ----------------------
+ * Plays every tile movement animation with DOTween: the fall-in when a level starts, flying into the tray
+ * (the tile grows and turns into the tray pose while it travels, then boops twice on arrival), sliding to a
+ * new slot, the wiggle of a covered tile, the undo flight back to the board, and the shuffle (gather, spin,
+ * spread). All the "feel" numbers live in the seven inspector sections here, except the tray pose, which
+ * the tray manager owns. Every tween is bound to one id, so KillAll cancels them (a restart does this).
+ * It never decides what happens, it only animates: TileTrayManager, the boosters and TileGameManager call it.
+ */
 using System;
 using System.Collections.Generic;
 using com.otm.manager;
 using DG.Tweening;
 using UnityEngine;
 
-// Plays every tile movement: the fall-in, flying to the tray, wiggles, the undo return and the shuffle.
-// All the "feel" numbers of the game live here, except the tray pose (size / rotation), which the tray manager owns.
 public class TileArrangementManager : Manager<TileArrangementManager>
 {
+    #region Private Variables
+
     private const string TweenId = "TileArrangement";
 
     [Header("1. Fall intro")]
@@ -60,18 +70,27 @@ public class TileArrangementManager : Manager<TileArrangementManager>
     [Tooltip("The staggered spread never takes longer than this in total.")]
     [SerializeField] private float shuffleMaxSpreadDelay = 0.5f;
 
+    #endregion
+
+    #region Common
+
+    // A new sequence that targets the tile and is bound to the shared tween id.
     private static Sequence NewSequence(Tile tile)
     {
         return DOTween.Sequence().SetTarget(tile.transform).Bind(TweenId, tile.gameObject);
     }
 
+    // Cancels every tile animation (used when a level restarts).
     public void KillAll()
     {
         DOTween.Kill(TweenId);
     }
 
-    // ---------------- Fall intro ----------------
+    #endregion
 
+    #region Fall Intro
+
+    // Every tile drops into place one after another, bottom layers first.
     public void PlayFallIntro(List<Tile> tiles, Action onComplete)
     {
         List<Tile> ordered = tiles.FindAll(t => t != null);
@@ -109,7 +128,9 @@ public class TileArrangementManager : Manager<TileArrangementManager>
         }
     }
 
-    // ---------------- Tray ----------------
+    #endregion
+
+    #region Tray Movement
 
     // A tile new to the tray flies in and grows / turns into the tray pose on the way.
     // A tile already in the tray just slides over to its new slot.
@@ -141,6 +162,7 @@ public class TileArrangementManager : Manager<TileArrangementManager>
         Fly(tile, pose, onComplete);
     }
 
+    // Slides a tile that is already in the tray to its new slot.
     private void Shift(Tile tile, Action onComplete)
     {
         tile.transform.DOLocalMove(tileLocalPositionOnSlot, shiftDuration)
@@ -149,6 +171,7 @@ public class TileArrangementManager : Manager<TileArrangementManager>
             .OnComplete(() => Settle(tile, onComplete));
     }
 
+    // Flies a new tile into its slot: move + pose together, then two boops.
     private void Fly(Tile tile, TrayPose pose, Action onComplete)
     {
         Vector3 scale = tile.TrayScale;   // the finished size, pose included
@@ -167,13 +190,14 @@ public class TileArrangementManager : Manager<TileArrangementManager>
         sequence.OnComplete(() => Settle(tile, onComplete));
     }
 
+    // One boop: grow a little, then return to the normal size.
     private static void AppendBoop(Sequence sequence, Transform target, Vector3 scale, float multiplier, float half)
     {
         sequence.Append(target.DOScale(scale * multiplier, half).SetEase(Ease.OutQuad));
         sequence.Append(target.DOScale(scale, half).SetEase(Ease.InOutQuad));
     }
 
-    // Snap to the exact final spot so nothing drifts after the tweens.
+    // Snaps to the exact final spot so nothing drifts after the tweens.
     private void Settle(Tile tile, Action onComplete)
     {
         if (tile != null)
@@ -184,7 +208,9 @@ public class TileArrangementManager : Manager<TileArrangementManager>
         onComplete?.Invoke();
     }
 
-    // ---------------- Wiggle, undo, shuffle ----------------
+    #endregion
+
+    #region Wiggle And Undo
 
     // A covered tile was clicked: shake it, then snap it back to its spot.
     public void PlayBlockedWiggle(Tile tile)
@@ -219,6 +245,10 @@ public class TileArrangementManager : Manager<TileArrangementManager>
             onComplete?.Invoke();
         });
     }
+
+    #endregion
+
+    #region Shuffle
 
     // Shuffle: everything gathers in the middle, spins, then spreads to its new spot (call SetSpot on the tiles first).
     public void PlayShuffle(List<Tile> tiles, Action onComplete)
@@ -257,4 +287,6 @@ public class TileArrangementManager : Manager<TileArrangementManager>
             });
         }
     }
+
+    #endregion
 }

@@ -1,13 +1,24 @@
+/*
+ * MergeBurstManager
+ * -----------------
+ * Runs the extra merges that a MergeBurstTile asks for. When a burst is requested it locks the tray, waits for
+ * the merge that triggered it (and any running booster) to finish, then repeats for every requested set: pick a
+ * random face that still has a full set on the board, take three random tiles of it, line them up in a row at
+ * their common center, take them off the board, and reuse the normal merge animation by raising
+ * TileTrayManager.startMerge. Tiles inside a burst that are burst tiles themselves can trigger more (Allow Chain
+ * Bursts). A level restart or the end of the level cancels everything. The loop itself is a coroutine, kept at
+ * the bottom of the file.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using com.otm.manager;
 using DG.Tweening;
 using UnityEngine;
 
-// Runs the extra merges a MergeBurstTile asks for. It waits for the merge that triggered it to finish,
-// then picks random full sets from the board, lines each one up and plays the normal merge animation.
 public class MergeBurstManager : Manager<MergeBurstManager>
 {
+    #region Private Variables
+
     private const string TweenId = "MergeBurst";
 
     [Header("Scene references")]
@@ -39,8 +50,18 @@ public class MergeBurstManager : Manager<MergeBurstManager>
     private int pending;
     private int arrived;
 
+    #endregion
+
+    #region Properties
+
+    // True while a merge animation or a booster is still running.
     private bool Busy => mergeManager.IsMerging || (boosterManager != null && boosterManager.IsBusy);
 
+    #endregion
+
+    #region Unity Callbacks
+
+    // Starts listening for burst requests and for level changes.
     private void OnEnable()
     {
         MergeBurstTile.burstRequested += OnBurstRequested;
@@ -48,6 +69,7 @@ public class MergeBurstManager : Manager<MergeBurstManager>
         TileGameManager.stateChanged += OnStateChanged;
     }
 
+    // Stops listening.
     private void OnDisable()
     {
         MergeBurstTile.burstRequested -= OnBurstRequested;
@@ -55,6 +77,11 @@ public class MergeBurstManager : Manager<MergeBurstManager>
         TileGameManager.stateChanged -= OnStateChanged;
     }
 
+    #endregion
+
+    #region Starting And Stopping
+
+    // A burst tile asked for extra sets: queue them and start the routine if it isn't running.
     private void OnBurstRequested(int sets)
     {
         if (running && !allowChainBursts) return;
@@ -67,9 +94,13 @@ public class MergeBurstManager : Manager<MergeBurstManager>
         StartCoroutine(Run());
     }
 
+    // A new level cancels any burst.
     private void OnLevelStarted(int levelNumber) { Stop(); }
+
+    // Leaving the Playing state cancels any burst.
     private void OnStateChanged(TileGameState state) { if (state != TileGameState.Playing) Stop(); }
 
+    // Cancels the routine and animations and unlocks the tray.
     private void Stop()
     {
         StopAllCoroutines();
@@ -81,40 +112,9 @@ public class MergeBurstManager : Manager<MergeBurstManager>
         trayManager.SetExternalLock(false);
     }
 
-    private IEnumerator Run()
-    {
-        yield return null;   // give TileMergeManager a frame to register the merge that triggered us
-        while (Busy) yield return null;
-        yield return new WaitForSeconds(startDelay);
+    #endregion
 
-        while (pending > 0 && gameManager.IsPlaying)
-        {
-            while (Busy) yield return null;
-            pending--;
-
-            List<Tile> set = PickSet();
-            if (set == null) break;
-
-            // Line the three up, and wait until they have all arrived (or time out).
-            arrived = 0;
-            Gather(set);
-            for (float waited = 0f; arrived < set.Count && waited < gatherDuration + 2f; waited += Time.deltaTime) yield return null;
-            if (set.Exists(t => t == null)) continue;
-
-            // Take them off the board, then reuse the normal merge animation.
-            foreach (Tile tile in set)
-            {
-                TileTrayManager.tilePickedUp?.Invoke(tile);
-                tile.PrepareForTray();
-            }
-            TileTrayManager.startMerge?.Invoke(set);
-
-            for (float waited = 0f; set.Exists(t => t != null) && waited < maxWaitForMerge; waited += Time.deltaTime) yield return null;
-            yield return new WaitForSeconds(delayBetweenSets);
-        }
-
-        Stop();
-    }
+    #region Picking And Gathering
 
     // A random face that still has a full set on the board, and three random tiles of it.
     private List<Tile> PickSet()
@@ -151,4 +151,46 @@ public class MergeBurstManager : Manager<MergeBurstManager>
                 .OnComplete(() => arrived++);
         }
     }
+
+    #endregion
+
+    #region Coroutines
+
+    // The burst loop: wait for the trigger merge, then merge one random set after another.
+    private IEnumerator Run()
+    {
+        yield return null;   // give TileMergeManager a frame to register the merge that triggered us
+        while (Busy) yield return null;
+        yield return new WaitForSeconds(startDelay);
+
+        while (pending > 0 && gameManager.IsPlaying)
+        {
+            while (Busy) yield return null;
+            pending--;
+
+            List<Tile> set = PickSet();
+            if (set == null) break;
+
+            // Line the three up, and wait until they have all arrived (or time out).
+            arrived = 0;
+            Gather(set);
+            for (float waited = 0f; arrived < set.Count && waited < gatherDuration + 2f; waited += Time.deltaTime) yield return null;
+            if (set.Exists(t => t == null)) continue;
+
+            // Take them off the board, then reuse the normal merge animation.
+            foreach (Tile tile in set)
+            {
+                TileTrayManager.tilePickedUp?.Invoke(tile);
+                tile.PrepareForTray();
+            }
+            TileTrayManager.startMerge?.Invoke(set);
+
+            for (float waited = 0f; set.Exists(t => t != null) && waited < maxWaitForMerge; waited += Time.deltaTime) yield return null;
+            yield return new WaitForSeconds(delayBetweenSets);
+        }
+
+        Stop();
+    }
+
+    #endregion
 }

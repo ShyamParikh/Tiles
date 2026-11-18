@@ -1,3 +1,14 @@
+/*
+ * TileBoardManager
+ * ----------------
+ * Keeps track of the tiles lying on the board and which of them are covered by another tile. Two tiles
+ * overlap when their cells are closer than the overlap threshold, and the higher one covers the lower one.
+ * "Higher" depends on the movable rule (the usual top-tiles rule, or its reverse) and on what counts as "on
+ * top": the spawner's own stacking direction, a custom direction, or whichever tile is closer to a reference
+ * object. It writes Covered and CoverCount on the tiles and dims or frees them. Picking a tile up frees the
+ * tiles under it. Rebuild runs again after Shuffle, and ReturnTile is used by Undo. Boosters read Tiles, and
+ * the game manager reads RemainingTiles to detect a win.
+ */
 using System.Collections.Generic;
 using com.otm.manager;
 using UnityEngine;
@@ -5,9 +16,10 @@ using UnityEngine;
 public enum BoardMovableRule { TopTilesMovable, BottomTilesMovable }
 public enum BoardTopMode { AutoFromSpawner, CustomDirection, TowardsTopReference }
 
-// Keeps track of the tiles on the board and which of them are covered by another tile.
 public class TileBoardManager : Manager<TileBoardManager>
 {
+    #region Private Variables
+
     [SerializeField] private TileVisualSpawner spawner;
 
     [Header("Which tiles can be picked")]
@@ -30,22 +42,37 @@ public class TileBoardManager : Manager<TileBoardManager>
 
     private readonly List<Tile> tiles = new List<Tile>();
 
+    #endregion
+
+    #region Properties
+
     // The tiles currently lying on the board (not in the tray).
     public IReadOnlyList<Tile> Tiles => tiles;
     public int RemainingTiles => tiles.Count;
 
+    #endregion
+
+    #region Unity Callbacks
+
+    // Starts listening for a new board and for picked-up tiles.
     private void OnEnable()
     {
         TileVisualSpawner.boardGenerated += OnBoardGenerated;
         TileTrayManager.tilePickedUp += OnTilePickedUp;
     }
 
+    // Stops listening.
     private void OnDisable()
     {
         TileVisualSpawner.boardGenerated -= OnBoardGenerated;
         TileTrayManager.tilePickedUp -= OnTilePickedUp;
     }
 
+    #endregion
+
+    #region Board Changes
+
+    // A new board was built: take its tiles and work out who covers whom.
     private void OnBoardGenerated(List<Tile> generated)
     {
         tiles.Clear();
@@ -59,6 +86,21 @@ public class TileBoardManager : Manager<TileBoardManager>
         tiles.Add(tile);
         Rebuild();
     }
+
+    // A tile was picked up: remove it and uncover the tiles that were lying under it.
+    private void OnTilePickedUp(Tile tile)
+    {
+        tiles.Remove(tile);
+
+        foreach (Tile lower in tile.Covered)
+        {
+            if (lower != null && --lower.CoverCount <= 0) lower.SetBlocked(false);
+        }
+    }
+
+    #endregion
+
+    #region Covering
 
     // Works out again who covers whom. Call it whenever tiles changed their spot (Shuffle).
     public void Rebuild()
@@ -85,17 +127,6 @@ public class TileBoardManager : Manager<TileBoardManager>
         foreach (Tile tile in tiles) tile.SetBlocked(tile.CoverCount > 0);
     }
 
-    // Picking a tile up uncovers the tiles that were lying under it.
-    private void OnTilePickedUp(Tile tile)
-    {
-        tiles.Remove(tile);
-
-        foreach (Tile lower in tile.Covered)
-        {
-            if (lower != null && --lower.CoverCount <= 0) lower.SetBlocked(false);
-        }
-    }
-
     // True when 'upper' sits higher than 'lower' and their cells overlap.
     private bool Covers(Tile upper, Tile lower, Vector3 axis)
     {
@@ -106,6 +137,7 @@ public class TileBoardManager : Manager<TileBoardManager>
         return height > minHeightDifference && Mathf.Abs(delta.x) < overlapThreshold && Mathf.Abs(delta.y) < overlapThreshold;
     }
 
+    // The direction that counts as "up" for the board.
     private Vector3 TopAxis()
     {
         Vector3 axis = Vector3.up;
@@ -133,4 +165,6 @@ public class TileBoardManager : Manager<TileBoardManager>
         }
         return Vector3.Dot(tile.RestLocalPosition, axis);
     }
+
+    #endregion
 }

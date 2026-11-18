@@ -1,3 +1,16 @@
+/*
+ * TileVisualSpawner
+ * -----------------
+ * Turns a level asset into tiles on the board. The steps are: collect the painted cells; keep only whole sets
+ * of 3; build the face list (fixed counts first, then auto faces in sets of 3 from a shuffled bag); assign a
+ * tile type to every tile (face locks first, then fixed counts, then auto types); shuffle placement; then
+ * instantiate each tile, give it its face and its board / tray looks, and announce the finished board through
+ * boardGenerated. Inspector options: board plane (vertical wall or flat table), tile rotation, stacking
+ * direction, grid sizing (Manual spacing, FitToDimensions, FitToBoxCollider), centering, whether placement
+ * is random every load (off + the level's seed = the same layout every time), and whether the faces are random
+ * every load (on = the auto faces are picked freely, so how many sets each face gets is random too, always in
+ * whole sets of 3; tile types stay the same). TileGameManager calls Generate.
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,10 +18,16 @@ using UnityEngine;
 public enum TileBoardPlane { XZ_Flat, XY_Vertical }
 public enum GridSizingMode { Manual, FitToDimensions, FitToBoxCollider }
 
-// Turns a level asset into tiles on the board.
 public class TileVisualSpawner : MonoBehaviour
 {
+    #region Public Variables
+
+    // Fired once the board exists, with every spawned tile.
     public static Action<List<Tile>> boardGenerated;
+
+    #endregion
+
+    #region Private Variables
 
     [Tooltip("Optional. Tiles are created under this object.")]
     [SerializeField] private Transform boardRoot;
@@ -19,6 +38,8 @@ public class TileVisualSpawner : MonoBehaviour
     [SerializeField] private bool generateOnStart;
     [Tooltip("Off = the same layout every load (decided by the level's seed).")]
     [SerializeField] private bool randomizePlacementEveryLoad = true;
+    [Tooltip("On = every load picks the faces at random, and how many sets each face gets is random too (always whole sets of 3). Tile types stay the same.")]
+    [SerializeField] private bool randomizeFacesEveryLoad;
 
     [Header("Orientation & stacking")]
     [SerializeField] private TileBoardPlane boardPlane = TileBoardPlane.XY_Vertical;
@@ -41,21 +62,36 @@ public class TileVisualSpawner : MonoBehaviour
 
     private readonly List<Tile> spawnedTiles = new List<Tile>();
 
+    #endregion
+
+    #region Properties
+
     public IReadOnlyList<Tile> SpawnedTiles => spawnedTiles;
     public TileBoardPlane BoardPlane => boardPlane;
     public bool InvertStackingDirection => invertStackingDirection;
 
+    #endregion
+
+    #region Unity Callbacks
+
+    // Builds the level at start if that option is on.
     private void Start()
     {
         if (generateOnStart && levelAsset != null) Generate();
     }
 
+    #endregion
+
+    #region Building The Board
+
+    // Builds the level that is set in the inspector (also on the right-click menu).
     [ContextMenu("Generate Level")]
     public void Generate()
     {
         Generate(levelAsset);
     }
 
+    // Builds the given level: clears the old board, then creates and places every tile.
     public void Generate(TileLevelData level)
     {
         Clear();
@@ -74,12 +110,15 @@ public class TileVisualSpawner : MonoBehaviour
         System.Random contentRng = new System.Random(seed);
         System.Random placementRng = new System.Random(randomizePlacementEveryLoad ? Guid.NewGuid().GetHashCode() : seed + 1);
 
+        // With the option on, faces use their own fresh random, so they differ on every load.
+        System.Random faceRng = randomizeFacesEveryLoad ? new System.Random(Guid.NewGuid().GetHashCode()) : contentRng;
+
         // Only whole sets of 3 can be played, so a leftover cell or two is dropped.
         List<TileCell> cells = CollectCells(level);
         int usable = cells.Count / TileRules.SetSize * TileRules.SetSize;
         if (usable == 0) return;
 
-        List<Assignment> assignments = BuildAssignments(level, library, usable, contentRng, placementRng);
+        List<Assignment> assignments = BuildAssignments(level, library, usable, contentRng, placementRng, faceRng, randomizeFacesEveryLoad);
         if (assignments == null) return;
 
         Vector2Int max = MaxLayerSize(level);
@@ -113,6 +152,7 @@ public class TileVisualSpawner : MonoBehaviour
         if (Application.isPlaying) boardGenerated?.Invoke(new List<Tile>(spawnedTiles));
     }
 
+    // Every painted cell of every layer.
     private static List<TileCell> CollectCells(TileLevelData level)
     {
         List<TileCell> cells = new List<TileCell>();
@@ -130,6 +170,7 @@ public class TileVisualSpawner : MonoBehaviour
         return cells;
     }
 
+    // The biggest width and height among the layers.
     private static Vector2Int MaxLayerSize(TileLevelData level)
     {
         Vector2Int max = Vector2Int.one;
@@ -153,11 +194,14 @@ public class TileVisualSpawner : MonoBehaviour
         return new Vector2(size.x / max.x, (boardPlane == TileBoardPlane.XZ_Flat ? size.z : size.y) / max.y);
     }
 
-    // ---------------- Which face and which tile type goes where ----------------
+    #endregion
 
-    private static List<Assignment> BuildAssignments(TileLevelData level, TileLibrary library, int total, System.Random contentRng, System.Random placementRng)
+    #region Choosing Faces And Tile Types
+
+    // Combines faces and tile types into one shuffled list of assignments.
+    private static List<Assignment> BuildAssignments(TileLevelData level, TileLibrary library, int total, System.Random contentRng, System.Random placementRng, System.Random faceRng, bool randomFaceAmounts)
     {
-        List<int> faces = BuildFaceList(level, library, total, contentRng);
+        List<int> faces = BuildFaceList(level, library, total, faceRng, randomFaceAmounts);
         string[] types = faces == null ? null : AssignTypes(level, library, faces, contentRng, placementRng);
         if (types == null) return null;
 
@@ -169,7 +213,8 @@ public class TileVisualSpawner : MonoBehaviour
     }
 
     // Faces with a fixed count go first. The rest is filled in sets of 3 from the "auto" faces.
-    private static List<int> BuildFaceList(TileLevelData level, TileLibrary library, int total, System.Random rng)
+    // With randomAmounts on, every set picks any auto face freely, so the amount per face is random.
+    private static List<int> BuildFaceList(TileLevelData level, TileLibrary library, int total, System.Random rng, bool randomAmounts)
     {
         List<FacePoolEntry> entries = level.facePoolEntries.FindAll(e => e != null && library.GetFaceSprite(e.faceId) != null);
         if (level.facePoolEntries.Count == 0)
@@ -209,7 +254,17 @@ public class TileVisualSpawner : MonoBehaviour
         List<int> bag = new List<int>();
         for (int s = 0; s < sets; s++)
         {
-            int face = Draw(bag, autoIds, rng);
+            // Random amounts: any face can be drawn any number of times. Otherwise the bag spreads the faces evenly.
+            int face;
+            if (randomAmounts)
+            {
+                face = autoIds[rng.Next(autoIds.Count)];
+            }
+            else
+            {
+                face = Draw(bag, autoIds, rng);
+            }
+
             for (int k = 0; k < TileRules.SetSize; k++) faces.Add(face);
         }
         return faces;
@@ -275,6 +330,7 @@ public class TileVisualSpawner : MonoBehaviour
         return item;
     }
 
+    // A number from text that is always the same (unlike string.GetHashCode), used as the default seed.
     private static int StableHash(string text)
     {
         int hash = 17;
@@ -282,6 +338,11 @@ public class TileVisualSpawner : MonoBehaviour
         return hash;
     }
 
+    #endregion
+
+    #region Clearing
+
+    // Destroys every spawned tile (also on the right-click menu).
     [ContextMenu("Clear Board")]
     public void Clear()
     {
@@ -293,4 +354,6 @@ public class TileVisualSpawner : MonoBehaviour
         }
         spawnedTiles.Clear();
     }
+
+    #endregion
 }

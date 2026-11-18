@@ -1,12 +1,18 @@
+/*
+ * TileBodyLook
+ * ------------
+ * Handles everything about a tile's body colors and materials, in a plain class that Tile owns. Every tinted
+ * tile gets its own copy of the material (made the first time a color is needed), so one tile's color can
+ * never leak onto another. It finds the shader's color property (_BaseColor and friends), tints one material
+ * slot or all of them, replaces body materials, dims the body when the tile is covered, and frees its material
+ * copies when the tile is destroyed. A one-time warning appears if the material has no color property.
+ */
 using System.Collections.Generic;
 using UnityEngine;
 
-// A tile's body colors and materials. Every tinted tile gets its own copy of the material,
-// so one tile's color can never leak onto another.
 public class TileBodyLook
 {
-    private static readonly string[] FallbackProperties = { "_BaseColor", "_Color", "_TintColor", "_MainColor" };
-    private static bool warned;
+    #region Nested Types
 
     // One renderer and everything needed to tint its material slots.
     private class Part
@@ -19,6 +25,13 @@ public class TileBodyLook
         public Color[] actives;
     }
 
+    #endregion
+
+    #region Private Variables
+
+    private static readonly string[] FallbackProperties = { "_BaseColor", "_Color", "_TintColor", "_MainColor" };
+    private static bool warned;
+
     private readonly MeshRenderer body;
     private readonly List<MeshRenderer> extras;
     private readonly string preferredProperty;
@@ -30,6 +43,11 @@ public class TileBodyLook
     private Color color;
     private int colorSlot = -1;
 
+    #endregion
+
+    #region Setup
+
+    // Reads the renderers once. dimColor is what a covered tile is multiplied by (white = no dimming).
     public TileBodyLook(MeshRenderer body, List<MeshRenderer> extras, string preferredProperty, Color dimColor)
     {
         this.body = body;
@@ -39,6 +57,10 @@ public class TileBodyLook
         originalMaterials = body != null ? body.sharedMaterials : null;
         Build();
     }
+
+    #endregion
+
+    #region Colors
 
     // Tints one material slot, or every slot when slot is -1.
     public void SetColor(Color value, int slot = -1)
@@ -68,6 +90,7 @@ public class TileBodyLook
         Apply();
     }
 
+    // Goes back to the material's own colors.
     public void ClearColor()
     {
         if (!hasColor) return;
@@ -77,6 +100,17 @@ public class TileBodyLook
         foreach (Part part in parts) System.Array.Copy(part.originals, part.actives, part.originals.Length);
         Apply();
     }
+
+    // Dims the body when the tile is covered, restores it when it is free.
+    public void SetBlocked(bool value)
+    {
+        blocked = value;
+        Apply();
+    }
+
+    #endregion
+
+    #region Materials
 
     // Replaces the body material in one slot, or in every slot when slot is -1.
     public void SetMaterial(Material material, int slot = -1)
@@ -109,18 +143,13 @@ public class TileBodyLook
         Rebuild();
     }
 
-    public void SetBlocked(bool value)
-    {
-        blocked = value;
-        Apply();
-    }
-
     // Frees our material copies. Call when the tile is destroyed.
     public void Release()
     {
         Release(false);
     }
 
+    // Destroys the copies, and optionally puts the shared materials back on the renderers.
     private void Release(bool restoreShared)
     {
         foreach (Part part in parts)
@@ -136,6 +165,10 @@ public class TileBodyLook
         }
     }
 
+    #endregion
+
+    #region Reading And Applying
+
     // After the materials changed: read them again and re-apply the current color.
     private void Rebuild()
     {
@@ -144,6 +177,7 @@ public class TileBodyLook
         else Apply();
     }
 
+    // Reads every renderer's materials and colors.
     private void Build()
     {
         parts.Clear();
@@ -154,6 +188,7 @@ public class TileBodyLook
         }
     }
 
+    // Reads one renderer.
     private void AddPart(MeshRenderer renderer)
     {
         if (renderer == null) return;
@@ -179,6 +214,7 @@ public class TileBodyLook
         parts.Add(part);
     }
 
+    // The shader's color property: the preferred one if it exists, otherwise a common fallback.
     private string FindProperty(Material material)
     {
         if (material == null) return null;
@@ -211,4 +247,6 @@ public class TileBodyLook
             }
         }
     }
+
+    #endregion
 }

@@ -1,3 +1,14 @@
+/*
+ * TileGameManager
+ * ---------------
+ * The referee of the game. It holds the level list and the game state (Loading, Playing, Won, Lost) and
+ * announces changes through stateChanged and levelStarted. Loading a level clears old tweens and the tray,
+ * asks the spawner to build the level, then plays the fall-in animation and switches to Playing. After every
+ * merge it checks for a win: nothing left on the board or in the tray and no merge still playing. Progress is
+ * saved on the win. A full tray with no merge is a loss. RestartLevel replays the level (after a win it
+ * steps the saved progress back first), NextLevel goes forward, and ForcePlayingState unlocks input if a
+ * level ever gets stuck in Loading. Those three are Odin buttons, enabled in Play Mode only.
+ */
 using System;
 using System.Collections.Generic;
 using com.otm.manager;
@@ -6,9 +17,17 @@ using UnityEngine;
 
 public enum TileGameState { Loading, Playing, Won, Lost }
 
-// The referee: loads levels, tracks the game state and decides when you win or lose.
 public class TileGameManager : Manager<TileGameManager>
 {
+    #region Public Variables
+
+    public static Action<TileGameState> stateChanged;
+    public static Action<int> levelStarted;
+
+    #endregion
+
+    #region Private Variables
+
     [Header("Levels")]
     [SerializeField] private List<TileLevelData> levels = new List<TileLevelData>();
     [Tooltip("On = start again from level 1 after the last one. Off = keep replaying the last level.")]
@@ -23,12 +42,14 @@ public class TileGameManager : Manager<TileGameManager>
     [SerializeField] private TileArrangementManager arrangementManager;
     [SerializeField] private TileMergeManager mergeManager;
 
-    public static Action<TileGameState> stateChanged;
-    public static Action<int> levelStarted;
-
     private TileGameState state = TileGameState.Loading;
 
+    #endregion
+
+    #region Properties
+
     public bool IsPlaying => state == TileGameState.Playing;
+
     // The level being played (or just finished). Handy for UI text.
     public int PlayedLevelNumber { get; private set; }
 
@@ -38,23 +59,35 @@ public class TileGameManager : Manager<TileGameManager>
         set { LevelIndexHelper.Instance.SetLevelIndex(progressKey, Mathf.Max(0, value)); }
     }
 
+    #endregion
+
+    #region Unity Callbacks
+
+    // Starts listening for a full tray and for finished merges.
     private void OnEnable()
     {
         TileTrayManager.trayFull += OnTrayFull;
         TileMergeManager.mergeFinished += CheckWin;
     }
 
+    // Stops listening.
     private void OnDisable()
     {
         TileTrayManager.trayFull -= OnTrayFull;
         TileMergeManager.mergeFinished -= CheckWin;
     }
 
+    // Loads the first level.
     private void Start()
     {
         LoadCurrentLevel();
     }
 
+    #endregion
+
+    #region Level Loading
+
+    // Clears everything, builds the saved level, and plays the fall-in before switching to Playing.
     public void LoadCurrentLevel()
     {
         SetState(TileGameState.Loading);
@@ -70,18 +103,18 @@ public class TileGameManager : Manager<TileGameManager>
         arrangementManager.PlayFallIntro(new List<Tile>(spawner.SpawnedTiles), () => SetState(TileGameState.Playing));
     }
 
+    // Replays the current level. After a win the saved progress steps back so the level just won reloads.
     [Button, EnableIf("@UnityEngine.Application.isPlaying")]
     public void RestartLevel()
     {
-        // A win already saved the progress, so step back to replay the level we just beat.
         if (state == TileGameState.Won) SavedIndex--;
         LoadCurrentLevel();
     }
 
+    // Goes to the next level. After a win the saved index already points at it.
     [Button, EnableIf("@UnityEngine.Application.isPlaying")]
     public void NextLevel()
     {
-        // After a win the saved index already points at the next level.
         if (state != TileGameState.Won) SavedIndex++;
         LoadCurrentLevel();
     }
@@ -93,6 +126,10 @@ public class TileGameManager : Manager<TileGameManager>
         SetState(TileGameState.Playing);
     }
 
+    #endregion
+
+    #region Win, Lose And State
+
     // You win when nothing is left on the board or in the tray, and no merge is still playing.
     private void CheckWin()
     {
@@ -102,14 +139,18 @@ public class TileGameManager : Manager<TileGameManager>
         SetState(TileGameState.Won);
     }
 
+    // A full tray with no merge is a loss.
     private void OnTrayFull()
     {
         if (state == TileGameState.Playing) SetState(TileGameState.Lost);
     }
 
+    // Changes the state and tells everyone.
     private void SetState(TileGameState newState)
     {
         state = newState;
         stateChanged?.Invoke(newState);
     }
+
+    #endregion
 }

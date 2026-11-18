@@ -22,39 +22,36 @@ MonoBehaviour:
   - id: Cloud
     prefab: {fileID: 6219456597700143080, guid: 9737ddbfb6a104513abaff79a2ea55ce, type: 3}
   faces:
-  - id: 0
+  - id: 1
     displayName: Question
     sprite: {fileID: 21300000, guid: 09297f44e7a0b3249b5b2cc891a5b381, type: 3}
-  - id: 1
+  - id: 2
     displayName: Merge
     sprite: {fileID: 21300000, guid: 5c08bbcce060bf24c8074d9f4d593e63, type: 3}
-  - id: 2
+  - id: 3
     displayName: Cloudy
     sprite: {fileID: 21300000, guid: 99bbc83bebbd36849b732a06e55ad60e, type: 3}
-  - id: 3
+  - id: 4
     displayName: Weapons_Axe
     sprite: {fileID: 21300000, guid: 8708d80070522a043a1ab6a2b2775382, type: 3}
-  - id: 4
+  - id: 5
     displayName: Weapons_Club
     sprite: {fileID: 21300000, guid: 06140cc248b05d2488fbb6493ce5fd11, type: 3}
-  - id: 5
+  - id: 6
     displayName: Weapons_FishingRod
     sprite: {fileID: 21300000, guid: 1959adfdc5c338840858eec9307f0184, type: 3}
-  - id: 6
+  - id: 7
     displayName: Weapons_Pickaxe
     sprite: {fileID: 21300000, guid: 45cfe68fb47a8514f96477d0fb432286, type: 3}
-  - id: 7
+  - id: 8
     displayName: Weapons_Plow
     sprite: {fileID: 21300000, guid: 72786b43084161c4c81e83eef0990e1a, type: 3}
-  - id: 8
+  - id: 9
     displayName: Weapons_Spear
     sprite: {fileID: 21300000, guid: bf28d1ab5e5c42e4aa2c9b729c09fce3, type: 3}
-  - id: 9
+  - id: 10
     displayName: Weapons_Staff
     sprite: {fileID: 21300000, guid: 3aa1cb26afcdc244bb3a95c193575ecb, type: 3}
-  - id: 10
-    displayName: Weapons_Sword
-    sprite: {fileID: 21300000, guid: b2f3327f47464544293b6b9018e1296e, type: 3}
   - id: 11
     displayName: Tool_WateringCan
     sprite: {fileID: 21300000, guid: 8dfb7eb4494cbe14eabf0fda5056d27d, type: 3}
@@ -140,98 +137,95 @@ MonoBehaviour:
     displayName: DiamondOre
     sprite: {fileID: 21300000, guid: d9c7df35c6600dd42b897ce1d9ae898b, type: 3}
   - id: 39
-    displayName: Harpoon
-    sprite: {fileID: 21300000, guid: 3f40ae8170066bb4d8280a58328eaa8f, type: 3}
-  - id: 40
     displayName: Hook
     sprite: {fileID: 21300000, guid: cce7f5ea931569049963cde10e4e5d77, type: 3}
-  - id: 41
+  - id: 40
     displayName: Phone
     sprite: {fileID: 21300000, guid: ab13573ac7c44714d9eee118f1c540d5, type: 3}
-  - id: 42
+  - id: 41
     displayName: Tape
     sprite: {fileID: 21300000, guid: 40c498d119203b24f871fd46978c7b48, type: 3}
-  - id: 43
+  - id: 42
     displayName: Coin
     sprite: {fileID: 21300000, guid: 99af61578a2317c449e29344b2b17479, type: 3}
-  - id: 44
+  - id: 43
     displayName: Crate
     sprite: {fileID: 21300000, guid: 68a41ff097730fb45a9b2adce184a79d, type: 3}
-  - id: 45
+  - id: 44
     displayName: BigTable
     sprite: {fileID: 21300000, guid: e11c6e74230e7c840a3fbcf8989cb499, type: 3}
-  - id: 46
+  - id: 45
     displayName: SmallTable
     sprite: {fileID: 21300000, guid: 6f082b6ddb44f9745a815afaaf44245a, type: 3}
-  - id: 47
+  - id: 46
     displayName: Food_Kabab
     sprite: {fileID: 21300000, guid: 4634d87584aafe546b622ae2f6e5b9ac, type: 3}
-  - id: 48
+  - id: 47
     displayName: Food_ChickenWings
     sprite: {fileID: 21300000, guid: 43c7cd3796487a540973573009a6817f, type: 3}
-  - id: 49
+  - id: 48
     displayName: Food_HakkaNoodles
     sprite: {fileID: 21300000, guid: 1fc7d2784f39bca4e9158ea31427d79a, type: 3}
-  - id: 50
+  - id: 49
     displayName: Food_SchezwanNoodles
     sprite: {fileID: 21300000, guid: 67d91650448db8d4f8c2761c114467a6, type: 3}
-  - id: 51
+  - id: 50
     displayName: Food_PestoPizza
     sprite: {fileID: 21300000, guid: 3dc9277b4d7254c4bb24a43248eea086, type: 3}
-  - id: 52
+  - id: 51
     displayName: Food_PeperoniPizza
     sprite: {fileID: 21300000, guid: c5efe437a3425564a9021a187d541e46, type: 3}
-  - id: 53
+  - id: 52
     displayName: Pumpkin
     sprite: {fileID: 21300000, guid: b398f31984f975d439ad74fd48570d89, type: 3}
-  - id: 54
+  - id: 53
     displayName: Gourd
     sprite: {fileID: 21300000, guid: 157cb9b2c093a584fba187ec8d423718, type: 3}
-  - id: 55
+  - id: 54
     displayName: Grass
     sprite: {fileID: 21300000, guid: 3d9791791d28a9745b616ce8d8113662, type: 3}
-  - id: 56
+  - id: 55
     displayName: Potato
     sprite: {fileID: 21300000, guid: a8343aa03d794694799a54194fab3f04, type: 3}
-  - id: 57
+  - id: 56
     displayName: Strawberry
     sprite: {fileID: 21300000, guid: 72dee83beb5760f49ae1ee546c10eb94, type: 3}
-  - id: 58
+  - id: 57
     displayName: Ground
     sprite: {fileID: 21300000, guid: 6b558f4b6b6cf9447a39de0812a0a3cf, type: 3}
-  - id: 59
+  - id: 58
     displayName: SpikeBall
     sprite: {fileID: 21300000, guid: a2d68081d156f704bb974b65c4ba11c6, type: 3}
-  - id: 60
+  - id: 59
     displayName: Crow
     sprite: {fileID: 21300000, guid: 7ed863ccbdc96f0438cc78a3c684e3e0, type: 3}
-  - id: 61
+  - id: 60
     displayName: Barrel
     sprite: {fileID: 21300000, guid: 550b6b4837f3a04499627c35f65670ca, type: 3}
-  - id: 62
+  - id: 61
     displayName: Dustbin
     sprite: {fileID: 21300000, guid: 5f29f64548d98f64893d01b0b4c02f3b, type: 3}
-  - id: 63
+  - id: 62
     displayName: Table
     sprite: {fileID: 21300000, guid: fe7a23deba9c59f4982966f8b75d0c41, type: 3}
-  - id: 64
+  - id: 63
     displayName: Man
     sprite: {fileID: 21300000, guid: 4ae49494a73ff584099f601cb159abba, type: 3}
-  - id: 65
+  - id: 64
     displayName: BaldMan
     sprite: {fileID: 21300000, guid: 8192c590fb896e8478742bc3423292c3, type: 3}
-  - id: 66
+  - id: 65
     displayName: Woman
     sprite: {fileID: 21300000, guid: 48cd8048939cc274dae16a9493829244, type: 3}
-  - id: 67
+  - id: 66
     displayName: DarkWizard
     sprite: {fileID: 21300000, guid: 31b17986fa5b13f4f9b7403589287a19, type: 3}
-  - id: 68
+  - id: 67
     displayName: LightWizard
     sprite: {fileID: 21300000, guid: 4836c09be31426e49b52ea966be0a3c8, type: 3}
+  - id: 68
+    displayName: Troll
+    sprite: {fileID: 21300000, guid: 07f23995d5720bd4d9cd266799cef6fb, type: 3}
   - id: 69
     displayName: Dragon
     sprite: {fileID: 21300000, guid: 4574f971d70a83c41ade6083ada1035a, type: 3}
-  - id: 70
-    displayName: Troll
-    sprite: {fileID: 21300000, guid: 07f23995d5720bd4d9cd266799cef6fb, type: 3}

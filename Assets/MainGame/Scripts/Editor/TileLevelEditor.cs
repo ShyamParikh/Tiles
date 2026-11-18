@@ -1,3 +1,13 @@
+/*
+ * TileLevelEditor
+ * ---------------
+ * The custom inspector for TileLevelData. It draws, from top to bottom: the tile library field, the level
+ * default look (color and material for the board and the tray), the tile type pool, the face pool, the random
+ * settings, the grid and stacking settings, the layer tabs, and the grid where you paint tiles with the mouse
+ * (click to flip a cell, drag to paint). Every change goes through Edit(), so it is undoable and saved, and
+ * Draw() applies a control's new value only when it really changed. It warns when counts are not multiples
+ * of 3 or are bigger than the board. This script must sit in an Editor folder.
+ */
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -6,12 +16,20 @@ using UnityEngine;
 [CustomEditor(typeof(TileLevelData))]
 public class TileLevelEditor : Editor
 {
+    #region Private Variables
+
     private int layerIndex;
-    private bool painting, paintValue = true;
+    private bool painting;
+    private bool paintValue = true;
     private bool showLook = true, showTypes = true, showFaces = true;
     private Vector2 gridScroll;
     private float cellSize = 24f;
 
+    #endregion
+
+    #region Unity Callbacks
+
+    // Draws the whole inspector.
     public override void OnInspectorGUI()
     {
         TileLevelData level = (TileLevelData)target;
@@ -43,7 +61,11 @@ public class TileLevelEditor : Editor
         else EditorGUILayout.HelpBox("Add a layer to start designing your board.", MessageType.Info);
     }
 
-    // Every change goes through here so it is undoable and saved.
+    #endregion
+
+    #region Editing Helpers
+
+    // Wraps a change so it is undoable and saved.
     private void Edit(string undoName, Action change)
     {
         Undo.RecordObject(target, undoName);
@@ -59,8 +81,11 @@ public class TileLevelEditor : Editor
         if (EditorGUI.EndChangeCheck()) Edit(undoName, () => apply(value));
     }
 
-    // ---------------- Looks ----------------
+    #endregion
 
+    #region Looks
+
+    // The level-wide look: board row, tray row and the material slots.
     private void DrawDefaultLook(TileLevelData level)
     {
         showLook = EditorGUILayout.Foldout(showLook, "Level Default Look (Color & Material)", true, EditorStyles.foldoutHeader);
@@ -114,8 +139,11 @@ public class TileLevelEditor : Editor
         EditorUtility.SetDirty(target);
     }
 
-    // ---------------- Pools ----------------
+    #endregion
 
+    #region Pools
+
+    // The tile type pool: tick the types the level uses and give them counts and looks.
     private void DrawTypePool(TileLevelData level, List<string> typeIds)
     {
         string title = level.tilePoolEntries.Count == 0 ? "Tile Pool (auto: first tile type)" : $"Tile Pool ({level.tilePoolEntries.Count} selected)";
@@ -140,6 +168,7 @@ public class TileLevelEditor : Editor
         EditorGUILayout.EndVertical();
     }
 
+    // The face pool: tick the faces, give them counts, lock them to a tile type, and set their looks.
     private void DrawFacePool(TileLevelData level, List<string> typeIds)
     {
         string title = level.facePoolEntries.Count == 0 ? "Face Pool (auto: all faces)" : $"Face Pool ({level.facePoolEntries.Count} selected)";
@@ -197,6 +226,7 @@ public class TileLevelEditor : Editor
         return entry;
     }
 
+    // The tile count field with -3 / +3 buttons.
     private void DrawCount(PoolEntry entry)
     {
         GUILayout.Label("Tiles:", GUILayout.Width(36f));
@@ -209,8 +239,11 @@ public class TileLevelEditor : Editor
         GUILayout.Label(entry.tileCount == 0 ? "(auto)" : $"({entry.tileCount / TileRules.SetSize} sets)", EditorStyles.miniLabel);
     }
 
-    // ---------------- Grid and layers ----------------
+    #endregion
 
+    #region Grid And Layers
+
+    // Default size, stacking values, and the add / remove layer buttons.
     private void DrawLayout(TileLevelData level)
     {
         EditorGUILayout.Space();
@@ -234,6 +267,7 @@ public class TileLevelEditor : Editor
         EditorGUILayout.EndHorizontal();
     }
 
+    // The layer tabs and everything for the selected layer.
     private void DrawLayerEditor(TileLevelData level)
     {
         EditorGUILayout.Space();
@@ -256,6 +290,7 @@ public class TileLevelEditor : Editor
         DrawGrid(layer);
     }
 
+    // The painted tile count, with warnings when it doesn't fit the sets.
     private static void DrawSummary(TileLevelData level)
     {
         int per = TileRules.SetSize;
@@ -273,6 +308,7 @@ public class TileLevelEditor : Editor
         if (tileFixed > usable) EditorGUILayout.HelpBox($"Tile Pool counts ({tileFixed}) are more than the board holds ({usable})!", MessageType.Error);
     }
 
+    // The sum of all fixed counts in a pool.
     private static int FixedTotal<T>(List<T> entries) where T : PoolEntry
     {
         int total = 0;
@@ -283,6 +319,11 @@ public class TileLevelEditor : Editor
         return total;
     }
 
+    #endregion
+
+    #region Grid Painting
+
+    // The scrollable grid of cells for one layer.
     private void DrawGrid(TileLayer layer)
     {
         EditorGUILayout.Space();
@@ -318,7 +359,7 @@ public class TileLevelEditor : Editor
         if (e.type == EventType.MouseDrag) Repaint();
     }
 
-    // One cell. Click to flip it, drag to paint the same value over several cells.
+    // One cell. Click flips it, dragging paints the same value over several cells.
     private void DrawCell(TileLayer layer, int x, int y, Event e)
     {
         Rect rect = GUILayoutUtility.GetRect(cellSize, cellSize, GUILayout.ExpandWidth(false));
@@ -343,4 +384,6 @@ public class TileLevelEditor : Editor
             e.Use();
         }
     }
+
+    #endregion
 }
