@@ -5991,7 +5991,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2b3f951d2d45b6c499b66b64da01bb11, type: 2}
   - {fileID: 11400000, guid: c4bd26cfbb999412b8efd285d558b5cc, type: 2}
   - {fileID: 11400000, guid: 0c838ae805bcf5c4ea846a93e6cb6ef3, type: 2}
-  - {fileID: 11400000, guid: c1cca1b4c45146a448dbf0dbaa9c9c58, type: 2}
   loopLevels: 1
   progressKey: TileExplorer
   spawner: {fileID: 282030428}

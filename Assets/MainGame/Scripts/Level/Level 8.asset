@@ -761,7 +761,7 @@ MonoBehaviour:
     trayMaterial: {fileID: 0}
     faceId: 14
     lockedTileTypeId: 
-  - tileCount: 9
+  - tileCount: 18
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
     overrideMaterial: 0
@@ -793,7 +793,7 @@ MonoBehaviour:
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
     tileTypeId: Normal
-  - tileCount: 9
+  - tileCount: 18
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
     overrideMaterial: 1
@@ -806,12 +806,12 @@ MonoBehaviour:
   - tileCount: 9
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
+    overrideMaterial: 1
+    tileMaterial: {fileID: 2100000, guid: 0ee16b057d71c4fd9bd379d82bba299c, type: 2}
     trayOverrideColor: 0
     trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
+    trayOverrideMaterial: 1
+    trayMaterial: {fileID: 2100000, guid: 0ee16b057d71c4fd9bd379d82bba299c, type: 2}
     tileTypeId: Merge
   - tileCount: 18
     overrideColor: 0
@@ -825,6 +825,8 @@ MonoBehaviour:
     tileTypeId: Cloud
   maxDifferentFaces: 0
   seed: 0
+  useSavedSeeds: 0
+  savedSeeds: []
   tileTypeId: 
   facePool: 
   defaultWidth: 6
@@ -843,7 +845,7 @@ MonoBehaviour:
     offset: {x: 0, y: 0}
     overrideShift: 0
     customShift: -90
-    grid: 010101010101000000000000000001010100000101010100000101010100000101010000000000000000010101010101
+    grid: 010101010101000000000000000101010100000101010100000101010100000101010100000000000000010101010101
   - width: 6
     height: 8
     offset: {x: 0, y: 0}
@@ -855,7 +857,7 @@ MonoBehaviour:
     offset: {x: 0, y: 0}
     overrideShift: 0
     customShift: -90
-    grid: 010101010101010101010101010101010101010100000101010100000101010101010101010101010101010101010101
+    grid: 010101010101010101010101010101010101010100010101010101000101010101010101010101010101010101010101
   - width: 6
     height: 8
     offset: {x: 0, y: 0}
@@ -873,4 +875,4 @@ MonoBehaviour:
     offset: {x: 0, y: 0}
     overrideShift: 0
     customShift: -90
-    grid: 010100000101010100000101000100000100000001010000000001010000000100000100010100000101010100000101
+    grid: 010100000101010100000101000101010100000101010100000101010100000101010100010100000101010100000101

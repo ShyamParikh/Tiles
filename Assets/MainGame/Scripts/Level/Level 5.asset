@@ -167,7 +167,7 @@ MonoBehaviour:
     tileTypeId: Normal
   maxDifferentFaces: 0
   seed: 0
-  useSavedSeeds: 0
+  useSavedSeeds: 1
   savedSeeds:
   - label: Seed 1
     use: 1
