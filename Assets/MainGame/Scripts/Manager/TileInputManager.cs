@@ -3,10 +3,11 @@
  * ----------------
  * Turns mouse or touch into tile clicks. Pressing a covered tile wiggles it, hovering shows the selection
  * outline, and releasing on a free tile fires tileClicked (TileTrayManager listens). Input is ignored unless the
- * game is Playing and no booster or tile effect has locked the tray. Tiles are found with a physics raycast
- * against their colliders, so the camera, layer mask and ray distance are set here. Fires blockedTileClicked
- * for sounds. The pointer ray can be drawn for debugging (Scene view, or Game view with Gizmos on): green =
- * hit a tile-layer collider, yellow = hit something outside the tile layers, red = hit nothing.
+ * game is Playing and no booster or tile effect has locked the tray. Tiles are found with a 2D physics
+ * raycast against their Collider2D, so the camera, layer mask and ray distance are set here (the first collider
+ * along the ray wins, so layers need a different Z). Fires blockedTileClicked for sounds. The pointer ray can be
+ * drawn for debugging (Scene view, or Game view with Gizmos on): green = hit a tile-layer collider, yellow =
+ * hit something outside the tile layers, red = hit nothing.
  */
 using System;
 using UnityEngine;
@@ -136,8 +137,8 @@ public class TileInputManager : MonoBehaviour
     private Tile TileUnderPointer()
     {
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, maxRayDistance, tileLayers))
+        RaycastHit2D hit = Physics2D.GetRayIntersection(ray, maxRayDistance, tileLayers);
+        if (hit.collider != null)
         {
             return Tile.FromCollider(hit.collider);
         }
@@ -174,20 +175,20 @@ public class TileInputManager : MonoBehaviour
         Vector3 rayEnd = ray.origin + ray.direction * maxRayDistance;
 
         // The first collider on any layer, and the first one on the tile layers (what the game really uses).
-        RaycastHit anyHit;
-        bool hitAnything = Physics.Raycast(ray, out anyHit, maxRayDistance, ~0);
-        RaycastHit tileLayerHit;
-        bool hitTileLayer = Physics.Raycast(ray, out tileLayerHit, maxRayDistance, tileLayers);
+        RaycastHit2D anyHit = Physics2D.GetRayIntersection(ray, maxRayDistance, Physics2D.AllLayers);
+        RaycastHit2D tileLayerHit = Physics2D.GetRayIntersection(ray, maxRayDistance, tileLayers);
 
-        if (hitTileLayer)
+        if (tileLayerHit.collider != null)
         {
-            Debug.DrawLine(ray.origin, tileLayerHit.point, Color.green, lineDuration);
-            Debug.DrawLine(tileLayerHit.point, rayEnd, Color.red, lineDuration);
+            Vector3 point = ray.GetPoint(tileLayerHit.distance);
+            Debug.DrawLine(ray.origin, point, Color.green, lineDuration);
+            Debug.DrawLine(point, rayEnd, Color.red, lineDuration);
         }
-        else if (hitAnything)
+        else if (anyHit.collider != null)
         {
-            Debug.DrawLine(ray.origin, anyHit.point, Color.yellow, lineDuration);
-            Debug.DrawLine(anyHit.point, rayEnd, Color.red, lineDuration);
+            Vector3 point = ray.GetPoint(anyHit.distance);
+            Debug.DrawLine(ray.origin, point, Color.yellow, lineDuration);
+            Debug.DrawLine(point, rayEnd, Color.red, lineDuration);
         }
         else
         {

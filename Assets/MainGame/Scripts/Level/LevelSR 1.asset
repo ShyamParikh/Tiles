@@ -1,0 +1,142 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
+  m_Name: LevelSR 1
+  m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
+  library: {fileID: 11400000, guid: e9f16e3d1c9781f40a630ab2de502467, type: 2}
+  overrideDefaultTileColor: 0
+  defaultTileColor: {r: 1, g: 1, b: 1, a: 1}
+  targetMaterialSlot: -1
+  overrideDefaultTileMaterial: 0
+  defaultTileMaterial: {fileID: 0}
+  materialTargetSlot: -1
+  overrideDefaultTrayColor: 0
+  defaultTrayColor: {r: 1, g: 1, b: 1, a: 1}
+  overrideDefaultTrayMaterial: 0
+  defaultTrayMaterial: {fileID: 0}
+  facePoolEntries:
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 0
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 1
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 2
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 3
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 4
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 5
+    lockedTileTypeId: 
+  tilePoolEntries:
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    tileTypeId: Classic
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    tileTypeId: Normal
+  maxDifferentFaces: 0
+  seed: 0
+  useSavedSeeds: 0
+  savedSeeds: []
+  tileTypeId: 
+  facePool: 
+  defaultWidth: 3
+  defaultHeight: 2
+  baseLayerHeight: -30
+  defaultLayerShift: -90
+  layers:
+  - width: 5
+    height: 4
+    offset: {x: 0, y: 0}
+    overrideShift: 0
+    customShift: -30
+    grid: 0001000100010101010100010101000000010000
+  - width: 4
+    height: 3
+    offset: {x: 0.5, y: 0.5}
+    overrideShift: 0
+    customShift: -90
+    grid: 010101010101010100010100
+  - width: 3
+    height: 2
+    offset: {x: 1, y: 1}
+    overrideShift: 0
+    customShift: -90
+    grid: 010001000100

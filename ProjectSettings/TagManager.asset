@@ -41,14 +41,20 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Face
-    uniqueID: 3906364951
-    locked: 0
-  - name: UI
+  - name: BackUI
     uniqueID: 3158895509
     locked: 0
   - name: Spot
     uniqueID: 3797367699
+    locked: 0
+  - name: Tile
+    uniqueID: 4067052851
+    locked: 0
+  - name: Face
+    uniqueID: 3906364951
+    locked: 0
+  - name: FrontUI
+    uniqueID: 3363594625
     locked: 0
   m_RenderingLayers:
   - Default

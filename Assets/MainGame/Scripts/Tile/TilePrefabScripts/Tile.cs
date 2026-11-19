@@ -1,13 +1,15 @@
 /*
  * Tile
  * ----
- * The base tile. It knows its face id, its layer and cell, the tiles it covers and how many tiles cover it,
- * which tray slot it sits in, and how it looks. Looks are handled by TileBodyLook: the body material and color
- * come from the prefab's inspector or from the level (a board look and a tray look), covered tiles are dimmed,
- * and the face is a SpriteRenderer child. A click finds its tile through FromCollider.
- * Special tiles (Cloudy, Question, MergeBurst) inherit from this and only override the hooks at the bottom;
- * they must not define Awake or OnDestroy themselves. The tile does no movement: TileArrangementManager
- * animates it, TileBoardManager writes Covered / CoverCount, and TileTrayManager decides when it is picked up.
+ * The base tile, drawn with sprites. It knows its face id, its layer and cell, the tiles it covers and how many
+ * tiles cover it, which tray slot it sits in, and how it looks. The body is a SpriteRenderer and the face is a
+ * second SpriteRenderer in front of it. Looks are handled by TileSpriteLook: the body material and color come
+ * from the prefab's inspector or from the level (a board look and a tray look), and covered tiles are dimmed.
+ * Draw order comes from the sorting order: higher layers draw over lower ones, and a tile in the tray draws over
+ * the whole board. A click finds its tile through FromCollider (a Collider2D). Special tiles (Cloudy, Question,
+ * MergeBurst) inherit from this and only override the hooks at the bottom; they must not define Awake or
+ * OnDestroy themselves. The tile does no movement: TileArrangementManager animates it, TileBoardManager writes
+ * Covered / CoverCount, and TileTrayManager decides when it is picked up.
  */
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,35 +27,41 @@ public class Tile : MonoBehaviour
     #region Private Variables
 
     // A raycast hits a collider, so this is how a click finds its tile.
-    private static readonly Dictionary<Collider, Tile> byCollider = new Dictionary<Collider, Tile>();
+    private static readonly Dictionary<Collider2D, Tile> byCollider = new Dictionary<Collider2D, Tile>();
 
     [Header("References")]
-    [Tooltip("The mesh child that draws the tile body.")]
-    [SerializeField] private MeshFilter bodyMesh;
-    [SerializeField] private MeshRenderer bodyRenderer;
-    [Tooltip("Optional: other parts of the prefab that should get the color tint (they keep their own materials).")]
-    [SerializeField] private List<MeshRenderer> extraBodyRenderers = new List<MeshRenderer>();
-    [Tooltip("The SpriteRenderer that shows the face. Make it a child of the tile, just in front of the body.")]
+    [Tooltip("The SpriteRenderer that draws the tile body.")]
+    [SerializeField] private SpriteRenderer bodyRenderer;
+    [Tooltip("Optional: other sprite parts of the prefab that should get the color tint.")]
+    [SerializeField] private List<SpriteRenderer> extraBodyRenderers = new List<SpriteRenderer>();
+    [Tooltip("The SpriteRenderer that shows the face. Make it a child of the tile, in front of the body.")]
     [SerializeField] private SpriteRenderer faceRenderer;
-    [Tooltip("The collider that clicks hit.")]
-    [SerializeField] private Collider col;
+    [Tooltip("The 2D collider that clicks hit.")]
+    [SerializeField] private Collider2D col;
+
+    [Header("Sorting")]
+    [Tooltip("Sorting order of the lowest board layer. The body uses it, extra parts +1, the face +2.")]
+    [SerializeField] private int baseSortingOrder;
+    [Tooltip("How much higher each board layer draws. Keep it at 3 or more so the parts of two layers never mix.")]
+    [SerializeField] private int sortingOrderPerLayer = 10;
+    [Tooltip("Sorting order while the tile is in or flying to the tray. Above every board layer.")]
+    [SerializeField] private int traySortingOrder = 500;
 
     [Header("Look on the board (a level can override these)")]
     [Tooltip("Replaces the body material. Empty = keep the prefab's own.")]
     [SerializeField] private Material bodyMaterialOverride;
-    [Tooltip("-1 = every material slot, otherwise just that slot.")]
-    [SerializeField] private int bodyMaterialSlot = -1;
     [SerializeField] private bool overrideBodyColor;
     [SerializeField] private Color bodyColor = Color.white;
-    [SerializeField] private int bodyColorSlot = -1;
 
     [Header("Covered look")]
     [SerializeField] private bool tintBodyWhenBlocked = true;
     [SerializeField] private Color blockedColor = new Color(0.55f, 0.55f, 0.55f, 1f);
-    [Tooltip("Color property of the body material. URP Lit = _BaseColor, built-in = _Color. Shader Graph: its Reference name (Exposed).")]
-    [SerializeField] private string bodyColorProperty = "_BaseColor";
 
-    private TileBodyLook look;
+    [Header("Selection outline")]
+    [Tooltip("The outline is a copy of the body sprite behind it, this much bigger. Use a flat sprite material for it.")]
+    [SerializeField] private float outlineScale = 1.08f;
+
+    private TileSpriteLook look;
     private int faceId;
     private int layerIndex;
     private Vector2 cellPosition;
@@ -84,15 +92,16 @@ public class Tile : MonoBehaviour
     public TileSpot Spot => new TileSpot { layer = layerIndex, cell = cellPosition, position = restPosition, rotation = restRotation };
 
     private bool HasTrayLook => trayLook.material != null || trayLook.hasColor;
+    private int BoardSortingOrder => baseSortingOrder + layerIndex * sortingOrderPerLayer;
 
     #endregion
 
     #region Static Helpers
 
     // Finds the tile that owns a collider (null if there is none).
-    public static Tile FromCollider(Collider collider)
+    public static Tile FromCollider(Collider2D collider)
     {
-        return byCollider.ContainsKey(collider) ? byCollider[collider] : null;
+        return collider != null && byCollider.ContainsKey(collider) ? byCollider[collider] : null;
     }
 
     // Clears the lookup when entering Play Mode without a domain reload.
@@ -109,18 +118,17 @@ public class Tile : MonoBehaviour
     // Sets up the body look and registers the collider for clicks.
     protected virtual void Awake()
     {
-        look = new TileBodyLook(bodyRenderer, extraBodyRenderers, bodyColorProperty, tintBodyWhenBlocked ? blockedColor : Color.white);
+        look = new TileSpriteLook(bodyRenderer, extraBodyRenderers, tintBodyWhenBlocked ? blockedColor : Color.white);
         ApplyBoardLook();
 
-        if (col == null) Debug.LogError($"[TILE] '{name}' has no Collider assigned, so it can't be clicked.", this);
+        if (col == null) Debug.LogError($"[TILE] '{name}' has no Collider2D assigned, so it can't be clicked.", this);
         else byCollider[col] = this;
     }
 
-    // Frees the material copies and unregisters the collider.
+    // Unregisters the collider and removes the outline.
     private void OnDestroy()
     {
         if (col != null) byCollider.Remove(col);
-        if (look != null) look.Release();
         Deselect();
     }
 
@@ -144,6 +152,8 @@ public class Tile : MonoBehaviour
             faceRenderer.sprite = faceSprite;
             faceRenderer.enabled = faceSprite != null;
         }
+
+        ApplySorting(BoardSortingOrder);
         OnTileInitialized();
     }
 
@@ -162,18 +172,31 @@ public class Tile : MonoBehaviour
         Material material = fromLevel ? boardLook.material : bodyMaterialOverride;
 
         look.ResetMaterial();
-        if (material != null) look.SetMaterial(material, fromLevel ? boardLook.materialSlot : bodyMaterialSlot);
+        if (material != null) look.SetMaterial(material);
 
-        if (boardLook.hasColor) look.SetColor(boardLook.color, boardLook.colorSlot);
-        else if (overrideBodyColor) look.SetColor(bodyColor, bodyColorSlot);
+        if (boardLook.hasColor) look.SetColor(boardLook.color);
+        else if (overrideBodyColor) look.SetColor(bodyColor);
         else look.ClearColor();
     }
 
     // Applies the level's tray look once the tile is in a slot.
     private void ApplyTrayLook()
     {
-        if (trayLook.material != null) look.SetMaterial(trayLook.material, trayLook.materialSlot);
-        if (trayLook.hasColor) look.SetColor(trayLook.color, trayLook.colorSlot);
+        if (trayLook.material != null) look.SetMaterial(trayLook.material);
+        if (trayLook.hasColor) look.SetColor(trayLook.color);
+    }
+
+    // Puts the body, the extra parts and the face on one sorting order (body lowest, face highest).
+    private void ApplySorting(int order)
+    {
+        if (bodyRenderer != null) bodyRenderer.sortingOrder = order;
+
+        foreach (SpriteRenderer extra in extraBodyRenderers)
+        {
+            if (extra != null) extra.sortingOrder = order + 1;
+        }
+
+        if (faceRenderer != null) faceRenderer.sortingOrder = order + 2;
     }
 
     #endregion
@@ -196,6 +219,7 @@ public class Tile : MonoBehaviour
         slot = newSlot;
         if (!entering) return;
 
+        ApplySorting(traySortingOrder);
         ApplyTrayLook();
         OnEnteredTray();
     }
@@ -214,6 +238,7 @@ public class Tile : MonoBehaviour
         transform.SetParent(boardParent, true);
         if (col != null) col.enabled = true;
 
+        ApplySorting(BoardSortingOrder);
         if (HasTrayLook) ApplyBoardLook();
         OnReturnedToBoard();
     }
@@ -225,6 +250,8 @@ public class Tile : MonoBehaviour
         cellPosition = spot.cell;
         restPosition = spot.position;
         restRotation = spot.rotation;
+
+        if (slot == null) ApplySorting(BoardSortingOrder);
     }
 
     // Snaps the tile back to its exact board position, rotation and size.
@@ -250,23 +277,23 @@ public class Tile : MonoBehaviour
 
     #region Selection Outline
 
-    // A copy of the body mesh with the outline material, shown while the pointer is over the tile.
+    // A slightly bigger copy of the body sprite behind it, with the outline material, shown while the pointer is over the tile.
     public void Select(Material outlineMaterial)
     {
         Deselect();
-        if (outlineMaterial == null || bodyRenderer == null || bodyMesh == null || bodyMesh.sharedMesh == null) return;
+        if (outlineMaterial == null || bodyRenderer == null || bodyRenderer.sprite == null) return;
 
         outline = new GameObject(bodyRenderer.name + "_Outline");
         outline.transform.SetParent(bodyRenderer.transform, false);
-        outline.AddComponent<MeshFilter>().sharedMesh = bodyMesh.sharedMesh;
+        outline.transform.localScale = Vector3.one * outlineScale;
 
-        Material[] materials = new Material[bodyRenderer.sharedMaterials.Length];
-        for (int i = 0; i < materials.Length; i++) materials[i] = outlineMaterial;
-
-        MeshRenderer outlineRenderer = outline.AddComponent<MeshRenderer>();
-        outlineRenderer.sharedMaterials = materials;
-        outlineRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        outlineRenderer.receiveShadows = false;
+        SpriteRenderer outlineRenderer = outline.AddComponent<SpriteRenderer>();
+        outlineRenderer.sprite = bodyRenderer.sprite;
+        outlineRenderer.sharedMaterial = outlineMaterial;
+        outlineRenderer.flipX = bodyRenderer.flipX;
+        outlineRenderer.flipY = bodyRenderer.flipY;
+        outlineRenderer.sortingLayerID = bodyRenderer.sortingLayerID;
+        outlineRenderer.sortingOrder = bodyRenderer.sortingOrder - 1;
     }
 
     // Removes the outline.
