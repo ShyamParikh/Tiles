@@ -9,10 +9,11 @@
  * steps the saved progress back first), NextLevel goes forward, and ForcePlayingState unlocks input if a
  * level ever gets stuck in Loading. Those three are Odin buttons, enabled in Play Mode only.
  */
+using com.otm.manager;
+using com.otm.utility;
+using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
-using com.otm.manager;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 public enum TileGameState { Loading, Playing, Won, Lost }
@@ -124,6 +125,21 @@ public class TileGameManager : Manager<TileGameManager>
     public void ForcePlayingState()
     {
         SetState(TileGameState.Playing);
+    }
+
+    // Sets the saved progress back to level 1 and saves it. The current level is not reloaded.
+    public void ResetProgress()
+    {
+        PlayerPrefsHelper.CanSaveData = true;
+        SavedIndex = 0;
+        PlayerPrefsHelper.SaveData();
+    }
+
+    // Sets the progress back to level 1 and loads it right away (Play Mode).
+    public void ResetToFirstLevel()
+    {
+        ResetProgress();
+        LoadCurrentLevel();
     }
 
     #endregion

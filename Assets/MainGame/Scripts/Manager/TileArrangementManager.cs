@@ -134,22 +134,39 @@ public class TileArrangementManager : Manager<TileArrangementManager>
 
     // A tile new to the tray flies in and grows / turns into the tray pose on the way.
     // A tile already in the tray just slides over to its new slot.
-    public void MoveTileToSlot(Tile tile, TraySlot slot, TrayPose pose, Action onComplete)
+    // A tile new to the tray flies in and grows / turns into the tray pose on the way.
+    // A tile already in the tray just slides over to its new slot.
+    // A tile that is still flying (stillFlying) keeps its current look and flies on to its new slot.
+    public void MoveTileToSlot(Tile tile, TraySlot slot, TrayPose pose, bool stillFlying, Action onComplete)
     {
-        if (tile == null || slot == null) return;
+        if (tile == null || slot == null)
+        {
+            return;
+        }
 
-        bool inTray = tile.Slot != null;
+        bool slideOnly = tile.Slot != null && !stillFlying;
         tile.transform.DOKill();
 
-        if (inTray) tile.RestoreTrayScale();
-        else tile.RestoreBoardTransform();
+        if (slideOnly)
+        {
+            tile.RestoreTrayScale();
+        }
+        else if (!stillFlying)
+        {
+            tile.RestoreBoardTransform();
+        }
 
         tile.SetSlot(slot);
         tile.transform.SetParent(slot.TileParent, true);
 
-        if (inTray)
+        if (slideOnly)
         {
             Shift(tile, onComplete);
+            return;
+        }
+        if (stillFlying)
+        {
+            Fly(tile, pose, onComplete);
             return;
         }
 

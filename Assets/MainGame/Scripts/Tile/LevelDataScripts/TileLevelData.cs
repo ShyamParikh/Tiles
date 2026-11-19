@@ -6,6 +6,8 @@
  * A face can be locked to one tile type. Looks come from a priority chain: the face entry first, then the tile
  * type entry, then the level default, then the prefab's own look. Every entry has a board look and a tray
  * look (the tray look applies when the tile reaches a tray slot). The seed keeps the random picks stable.
+ * The level can also keep a list of saved seeds (TileSeedEntry): with Use Saved Seeds on, every load takes the
+ * next ticked seed instead of random generation, and cycles through them.
  * New level assets start with Base Layer Height -30 and Default Layer Shift -90 (right-click the asset and
  * choose "Reset Stacking To Defaults" for older ones). TileLevelEditor draws this asset,
  * TileVisualSpawner builds the board from it, and TileGameManager picks which level to play.
@@ -108,6 +110,10 @@ public class TileLevelData : ScriptableObject
     [Tooltip("Keeps the random picks the same every load when Randomize Placement is off. 0 = automatic.")]
     public int seed;
 
+    [Tooltip("On = every load uses the next ticked saved seed instead of random generation. Seeds are cycled in list order.")]
+    public bool useSavedSeeds;
+    public List<TileSeedEntry> savedSeeds = new List<TileSeedEntry>();
+
     // Old single-type fields, only kept so older level assets can be converted.
     [HideInInspector] public string tileTypeId = "";
     [HideInInspector] public List<int> facePool = new List<int>();
@@ -165,6 +171,24 @@ public class TileLevelData : ScriptableObject
 
     // The entry for this tile type id (null if the type is not in the pool).
     public TilePoolEntry GetTileEntry(string id) { return tilePoolEntries.Find(e => e != null && e.tileTypeId == id); }
+
+    #endregion
+
+    #region Saved Seeds
+
+    // The saved seeds that are ticked, in list order.
+    public List<TileSeedEntry> GetSelectedSeeds()
+    {
+        List<TileSeedEntry> chosen = new List<TileSeedEntry>();
+        foreach (TileSeedEntry entry in savedSeeds)
+        {
+            if (entry != null && entry.use)
+            {
+                chosen.Add(entry);
+            }
+        }
+        return chosen;
+    }
 
     #endregion
 

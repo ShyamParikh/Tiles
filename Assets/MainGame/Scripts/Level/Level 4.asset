@@ -33,51 +33,84 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 4
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 5
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 9
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
-    faceId: 11
-    lockedTileTypeId: 
-  - tileCount: 0
-    overrideColor: 0
-    tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
-    trayOverrideColor: 0
-    trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
     faceId: 12
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 13
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 14
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 15
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 24
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 25
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 37
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 38
     lockedTileTypeId: 
   tilePoolEntries:
   - tileCount: 0
@@ -90,15 +123,15 @@ MonoBehaviour:
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
     tileTypeId: Classic
-  - tileCount: 6
+  - tileCount: 9
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 0
-    tileMaterial: {fileID: 0}
+    overrideMaterial: 1
+    tileMaterial: {fileID: 2100000, guid: d6c5679cf184043a7a5c6a40099eea4b, type: 2}
     trayOverrideColor: 0
     trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 0
-    trayMaterial: {fileID: 0}
+    trayOverrideMaterial: 1
+    trayMaterial: {fileID: 2100000, guid: aacbdf0c0e5bd9b4fa2f8b6341d20131, type: 2}
     tileTypeId: Question
   - tileCount: 0
     overrideColor: 0
@@ -112,6 +145,38 @@ MonoBehaviour:
     tileTypeId: Normal
   maxDifferentFaces: 0
   seed: 0
+  useSavedSeeds: 1
+  savedSeeds:
+  - label: Seed 1
+    use: 1
+    contentSeed: 1297441095
+    faceSeed: 2002315096
+    placementSeed: 494277194
+    randomFaceAmounts: 1
+  - label: Seed 2
+    use: 1
+    contentSeed: 1297441095
+    faceSeed: 714409886
+    placementSeed: 318821760
+    randomFaceAmounts: 1
+  - label: Seed 3
+    use: 1
+    contentSeed: 1297441095
+    faceSeed: 1853772564
+    placementSeed: -1440522499
+    randomFaceAmounts: 1
+  - label: Seed 4
+    use: 1
+    contentSeed: 1297441095
+    faceSeed: 795703108
+    placementSeed: 1932709252
+    randomFaceAmounts: 1
+  - label: Seed 5
+    use: 1
+    contentSeed: 1297441095
+    faceSeed: -653286131
+    placementSeed: 423324471
+    randomFaceAmounts: 1
   tileTypeId: 
   facePool: 
   defaultWidth: 6

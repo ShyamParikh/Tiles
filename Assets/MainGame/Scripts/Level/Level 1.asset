@@ -784,6 +784,8 @@ MonoBehaviour:
     tileTypeId: Normal
   maxDifferentFaces: 0
   seed: 0
+  useSavedSeeds: 0
+  savedSeeds: []
   tileTypeId: 
   facePool: 
   defaultWidth: 5

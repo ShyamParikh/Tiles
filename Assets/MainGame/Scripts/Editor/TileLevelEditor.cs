@@ -3,10 +3,11 @@
  * ---------------
  * The custom inspector for TileLevelData. It draws, from top to bottom: the tile library field, the level
  * default look (color and material for the board and the tray), the tile type pool, the face pool, the random
- * settings, the grid and stacking settings, the layer tabs, and the grid where you paint tiles with the mouse
- * (click to flip a cell, drag to paint). Every change goes through Edit(), so it is undoable and saved, and
- * Draw() applies a control's new value only when it really changed. It warns when counts are not multiples
- * of 3 or are bigger than the board. This script must sit in an Editor folder.
+ * settings, the saved seeds (tick the ones to use, add a random one or save the board that was spawned last,
+ * and switch seed use on or off), the grid and stacking settings, the layer tabs, and the grid where you paint
+ * tiles with the mouse (click to flip a cell, drag to paint). Every change goes through Edit(), so it is
+ * undoable and saved, and Draw() applies a control's new value only when it really changed. It warns when
+ * counts are not multiples of 3 or are bigger than the board. This script must sit in an Editor folder.
  */
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ public class TileLevelEditor : Editor
     private int layerIndex;
     private bool painting;
     private bool paintValue = true;
-    private bool showLook = true, showTypes = true, showFaces = true;
+    private bool showLook = true, showTypes = true, showFaces = true, showSeeds = true;
     private Vector2 gridScroll;
     private float cellSize = 24f;
 
@@ -54,6 +55,7 @@ public class TileLevelEditor : Editor
                 v => EditorGUILayout.IntField(new GUIContent("Max Different Faces (auto)", "0 = use every face in the pool."), v), v => level.maxDifferentFaces = Mathf.Max(0, v));
             Draw("Change Seed", level.seed,
                 v => EditorGUILayout.IntField(new GUIContent("Seed", "Keeps random picks the same each load. 0 = automatic."), v), v => level.seed = v);
+            DrawSeeds(level);
         }
 
         DrawLayout(level);
@@ -237,6 +239,153 @@ public class TileLevelEditor : Editor
         count = Mathf.Max(0, count);
         if (count != entry.tileCount) Edit("Change Tile Count", () => entry.tileCount = count);
         GUILayout.Label(entry.tileCount == 0 ? "(auto)" : $"({entry.tileCount / TileRules.SetSize} sets)", EditorStyles.miniLabel);
+    }
+
+    #endregion
+
+    #region Saved Seeds
+
+    // The saved seeds of the level: tick the ones to use, add or save new ones.
+    private void DrawSeeds(TileLevelData level)
+    {
+        string title = $"Saved Seeds ({level.GetSelectedSeeds().Count} of {level.savedSeeds.Count} in use)";
+        showSeeds = EditorGUILayout.Foldout(showSeeds, title, true, EditorStyles.foldoutHeader);
+        if (!showSeeds)
+        {
+            return;
+        }
+
+        EditorGUILayout.BeginVertical("box");
+
+        EditorGUI.BeginChangeCheck();
+        GUIContent useLabel = new GUIContent("Use Saved Seeds (instead of random generation)", "On = every load takes the next ticked seed and cycles through them. Off = the normal random generation.");
+        bool useSeeds = EditorGUILayout.ToggleLeft(useLabel, level.useSavedSeeds);
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(target, "Change Use Saved Seeds");
+            level.useSavedSeeds = useSeeds;
+            EditorUtility.SetDirty(target);
+        }
+
+        int removeIndex = -1;
+        for (int i = 0; i < level.savedSeeds.Count; i++)
+        {
+            if (DrawSeedRow(level.savedSeeds[i]))
+            {
+                removeIndex = i;
+            }
+        }
+        if (removeIndex >= 0)
+        {
+            Undo.RecordObject(target, "Remove Seed");
+            level.savedSeeds.RemoveAt(removeIndex);
+            EditorUtility.SetDirty(target);
+        }
+
+        if (level.savedSeeds.Count == 0)
+        {
+            EditorGUILayout.HelpBox("No seeds yet. Add a random one, or spawn the level and press Save Current Layout.", MessageType.Info);
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Add Random Seed"))
+        {
+            AddSeed(level, TileSeedEntry.CreateRandom("Seed " + (level.savedSeeds.Count + 1)));
+        }
+
+        using (new EditorGUI.DisabledScope(!CanSaveCurrentLayout(level)))
+        {
+            if (GUILayout.Button("Save Current Layout"))
+            {
+                TileSeedEntry current = TileVisualSpawner.LastLayout.Copy();
+                current.label = "Seed " + (level.savedSeeds.Count + 1);
+                current.use = true;
+                AddSeed(level, current);
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Tick All"))
+        {
+            SetAllSeedsUsed(level, true);
+        }
+        if (GUILayout.Button("Untick All"))
+        {
+            SetAllSeedsUsed(level, false);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.LabelField("Numbers: content / face / placement. Rnd = random amount of sets per face.", EditorStyles.miniLabel);
+        EditorGUILayout.EndVertical();
+    }
+
+    // One seed: tick, name, its numbers, Rnd flag and a remove button. Returns true when it should be removed.
+    private bool DrawSeedRow(TileSeedEntry entry)
+    {
+        bool remove = false;
+
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.BeginHorizontal();
+        bool use = EditorGUILayout.Toggle(entry.use, GUILayout.Width(18f));
+        string label = EditorGUILayout.TextField(entry.label, GUILayout.MinWidth(80f));
+        GUILayout.Label($"{entry.contentSeed} / {entry.faceSeed} / {entry.placementSeed}", EditorStyles.miniLabel);
+        bool randomAmounts = EditorGUILayout.ToggleLeft(new GUIContent("Rnd", "Random amount of sets per face."), entry.randomFaceAmounts, GUILayout.Width(42f));
+        if (GUILayout.Button("X", GUILayout.Width(22f)))
+        {
+            remove = true;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (EditorGUI.EndChangeCheck() && !remove)
+        {
+            Undo.RecordObject(target, "Change Seed");
+            entry.use = use;
+            entry.label = label;
+            entry.randomFaceAmounts = randomAmounts;
+            EditorUtility.SetDirty(target);
+        }
+        return remove;
+    }
+
+    // Adds a seed to the level (undoable and saved).
+    private void AddSeed(TileLevelData level, TileSeedEntry entry)
+    {
+        Undo.RecordObject(target, "Add Seed");
+        level.savedSeeds.Add(entry);
+        EditorUtility.SetDirty(target);
+    }
+
+    // Ticks or unticks every seed.
+    private void SetAllSeedsUsed(TileLevelData level, bool used)
+    {
+        Undo.RecordObject(target, "Tick Seeds");
+        foreach (TileSeedEntry entry in level.savedSeeds)
+        {
+            if (entry != null)
+            {
+                entry.use = used;
+            }
+        }
+        EditorUtility.SetDirty(target);
+    }
+
+    // True when the board spawned last belongs to this level and is not saved yet.
+    private static bool CanSaveCurrentLayout(TileLevelData level)
+    {
+        if (TileVisualSpawner.LastLevel != level || TileVisualSpawner.LastLayout == null)
+        {
+            return false;
+        }
+
+        foreach (TileSeedEntry entry in level.savedSeeds)
+        {
+            if (entry != null && entry.SameLayout(TileVisualSpawner.LastLayout))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     #endregion

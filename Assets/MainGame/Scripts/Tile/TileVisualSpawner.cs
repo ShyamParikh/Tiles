@@ -1,15 +1,19 @@
 /*
  * TileVisualSpawner
  * -----------------
- * Turns a level asset into tiles on the board. The steps are: collect the painted cells; keep only whole sets
- * of 3; build the face list (fixed counts first, then auto faces in sets of 3 from a shuffled bag); assign a
- * tile type to every tile (face locks first, then fixed counts, then auto types); shuffle placement; then
- * instantiate each tile, give it its face and its board / tray looks, and announce the finished board through
- * boardGenerated. Inspector options: board plane (vertical wall or flat table), tile rotation, stacking
- * direction, grid sizing (Manual spacing, FitToDimensions, FitToBoxCollider), centering, whether placement
- * is random every load (off + the level's seed = the same layout every time), and whether the faces are random
- * every load (on = the auto faces are picked freely, so how many sets each face gets is random too, always in
- * whole sets of 3; tile types stay the same). TileGameManager calls Generate.
+ * Turns a level asset into tiles on the board. The steps are: pick the three random numbers (content, face
+ * and placement) from the next saved seed of the level or from the inspector options; collect the painted
+ * cells; keep only whole sets of 3; build the face list (fixed counts first, then auto faces in sets of 3 from
+ * a shuffled bag, or picked freely when the amounts are random); assign a tile type to every tile (face locks
+ * first, then fixed counts, then auto types); shuffle placement; then instantiate each tile, give it its face
+ * and its board / tray looks, and announce the finished board through boardGenerated. Inspector options: board
+ * plane (vertical wall or flat table), tile rotation, stacking direction, grid sizing (Manual spacing,
+ * FitToDimensions, FitToBoxCollider), centering, whether placement is random every load (off + the level's
+ * seed = the same layout every time), and whether the faces are random every load (on = the auto faces are
+ * picked freely, so how many sets each face gets is random too, always in whole sets of 3; tile types stay the
+ * same). When the level has Use Saved Seeds on, the saved seeds replace those options and are cycled through.
+ * LastLayout and LastLevel remember the board spawned last, so the level inspector can save it as a seed.
+ * TileGameManager calls Generate.
  */
 using System;
 using System.Collections.Generic;
@@ -24,6 +28,10 @@ public class TileVisualSpawner : MonoBehaviour
 
     // Fired once the board exists, with every spawned tile.
     public static Action<List<Tile>> boardGenerated;
+
+    // The layout and level of the board spawned last. The level inspector uses them to save a seed.
+    public static TileSeedEntry LastLayout { get; private set; }
+    public static TileLevelData LastLevel { get; private set; }
 
     #endregion
 
@@ -61,6 +69,7 @@ public class TileVisualSpawner : MonoBehaviour
     private struct Assignment { public int faceId; public string typeId; }
 
     private readonly List<Tile> spawnedTiles = new List<Tile>();
+    private readonly TileSeedCycler seedCycler = new TileSeedCycler();
 
     #endregion
 
@@ -78,6 +87,14 @@ public class TileVisualSpawner : MonoBehaviour
     private void Start()
     {
         if (generateOnStart && levelAsset != null) Generate();
+    }
+
+    // Clears the statics when entering Play Mode without a domain reload.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        LastLayout = null;
+        LastLevel = null;
     }
 
     #endregion
@@ -106,19 +123,25 @@ public class TileVisualSpawner : MonoBehaviour
         levelAsset = level;
         TileLibrary library = level.library;
 
-        int seed = level.seed != 0 ? level.seed : StableHash(level.name);
-        System.Random contentRng = new System.Random(seed);
-        System.Random placementRng = new System.Random(randomizePlacementEveryLoad ? Guid.NewGuid().GetHashCode() : seed + 1);
+        // A saved seed (when the level uses them) or the normal settings decide the three random numbers.
+        TileSeedEntry layout = BuildLayout(level);
+        LastLayout = layout;
+        LastLevel = level;
 
-        // With the option on, faces use their own fresh random, so they differ on every load.
-        System.Random faceRng = randomizeFacesEveryLoad ? new System.Random(Guid.NewGuid().GetHashCode()) : contentRng;
+        System.Random contentRng = new System.Random(layout.contentSeed);
+        System.Random faceRng = contentRng;
+        if (layout.faceSeed != layout.contentSeed)
+        {
+            faceRng = new System.Random(layout.faceSeed);
+        }
+        System.Random placementRng = new System.Random(layout.placementSeed);
 
         // Only whole sets of 3 can be played, so a leftover cell or two is dropped.
         List<TileCell> cells = CollectCells(level);
         int usable = cells.Count / TileRules.SetSize * TileRules.SetSize;
         if (usable == 0) return;
 
-        List<Assignment> assignments = BuildAssignments(level, library, usable, contentRng, placementRng, faceRng, randomizeFacesEveryLoad);
+        List<Assignment> assignments = BuildAssignments(level, library, usable, contentRng, placementRng, faceRng, layout.randomFaceAmounts);
         if (assignments == null) return;
 
         Vector2Int max = MaxLayerSize(level);
@@ -150,6 +173,25 @@ public class TileVisualSpawner : MonoBehaviour
         }
 
         if (Application.isPlaying) boardGenerated?.Invoke(new List<Tile>(spawnedTiles));
+    }
+
+    // The next saved seed if the level uses them, otherwise the numbers the inspector options ask for.
+    private TileSeedEntry BuildLayout(TileLevelData level)
+    {
+        TileSeedEntry saved = seedCycler.Next(level);
+        if (saved != null)
+        {
+            return saved.Copy();
+        }
+
+        int seed = level.seed != 0 ? level.seed : StableHash(level.name);
+
+        TileSeedEntry layout = new TileSeedEntry();
+        layout.contentSeed = seed;
+        layout.faceSeed = randomizeFacesEveryLoad ? Guid.NewGuid().GetHashCode() : seed;
+        layout.placementSeed = randomizePlacementEveryLoad ? Guid.NewGuid().GetHashCode() : seed + 1;
+        layout.randomFaceAmounts = randomizeFacesEveryLoad;
+        return layout;
     }
 
     // Every painted cell of every layer.

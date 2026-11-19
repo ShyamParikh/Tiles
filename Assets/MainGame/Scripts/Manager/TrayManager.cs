@@ -3,10 +3,13 @@
  * ---------------
  * Holds the tiles that were picked up. Tiles sit in slot order and equal faces are kept together. When the
  * player clicks a free tile it is registered (tilePickedUp), put next to its face mates and flown into its
- * slot; when three of a kind are in the tray they merge (startMerge); a full tray with no merge fires trayFull.
- * The tray is locked while a tile flies and while a booster or effect runs (those locks are counted, so they
- * never unlock each other). The Tile Pose (size, rotation and animation inside the tray) is set here and
- * handed to TileArrangementManager. Boosters use InsertFromBooster, MergeIfComplete, RemoveTile and CountOf.
+ * slot. Several tiles can fly at the same time: clicking is only blocked while a booster or effect runs
+ * (external locks, which are counted so they never unlock each other). A set merges (startMerge) once three
+ * tiles of a face have ARRIVED, tiles still flying don't count. A full tray with nothing flying and no merge
+ * fires trayFull. If a merge or an insert moves a slot under a tile that is still flying, its arrival is kept
+ * and the tile flies on to the new slot. The Tile Pose (size, rotation and animation inside the tray) is set
+ * here and handed to TileArrangementManager. Boosters use InsertFromBooster, MergeIfComplete, RemoveTile and
+ * CountOf, and wait while IsLocked (a booster or a flying tile).
  */
 using System;
 using System.Collections.Generic;
@@ -24,6 +27,24 @@ public class TileTrayManager : Manager<TileTrayManager>
 
     #endregion
 
+    #region Nested Types
+
+    // A tile that is still flying to its slot, and what to do when it lands.
+    private class PendingArrival
+    {
+        public Tile tile;
+        public Action onArrived;
+        public bool fromClick;
+        public TileTrayManager owner;
+
+        public void Arrive()
+        {
+            owner.HandleArrival(this);
+        }
+    }
+
+    #endregion
+
     #region Private Variables
 
     [SerializeField] private TileGameManager gameManager;
@@ -36,17 +57,40 @@ public class TileTrayManager : Manager<TileTrayManager>
     [SerializeField] private TrayPose tilePose = new TrayPose();
 
     private readonly List<Tile> tiles = new List<Tile>();
-    private bool flying;
+    private readonly Dictionary<Tile, PendingArrival> pendingArrivals = new Dictionary<Tile, PendingArrival>();
     private int externalLocks;
 
     #endregion
 
     #region Properties
 
-    public int TileCount => tiles.Count;
-    public int FreeSlotCount => slots.Count - tiles.Count;
-    public bool IsExternallyLocked => externalLocks > 0;
-    public bool IsLocked => flying || externalLocks > 0;
+    public int TileCount
+    {
+        get { return tiles.Count; }
+    }
+
+    public int FreeSlotCount
+    {
+        get { return slots.Count - tiles.Count; }
+    }
+
+    // True while a booster or effect runs. Player clicks are only blocked by this.
+    public bool IsExternallyLocked
+    {
+        get { return externalLocks > 0; }
+    }
+
+    // True while any tile is still flying to its slot.
+    public bool IsFlying
+    {
+        get { return pendingArrivals.Count > 0; }
+    }
+
+    // Boosters wait for this: a booster or effect is running, or a tile is still flying.
+    public bool IsLocked
+    {
+        get { return IsFlying || externalLocks > 0; }
+    }
 
     #endregion
 
@@ -78,54 +122,105 @@ public class TileTrayManager : Manager<TileTrayManager>
 
     #region Picking Up Tiles
 
-    // A free tile was clicked: take it if the tray can.
+    // A free tile was clicked: take it if the tray can. Tiles that are still flying don't stop this.
     private void OnTileClicked(Tile tile)
     {
-        bool canTake = tile != null && !IsLocked && !tile.IsBlocked && tile.Slot == null
+        bool canTake = tile != null && !IsExternallyLocked && !tile.IsBlocked && tile.Slot == null
             && tiles.Count < slots.Count && gameManager.IsPlaying;
-        if (!canTake) return;
+        if (!canTake)
+        {
+            return;
+        }
 
-        flying = true;
-        Place(tile, () => OnArrived(tile));
+        Place(tile, null, true);
     }
 
-    // The tile reached its slot: merge, unlock, or lose if the tray is full.
-    private void OnArrived(Tile tile)
+    // The tile reached its slot: bump the slot, then merge or lose (click path) or tell the booster.
+    private void HandleArrival(PendingArrival pending)
     {
-        if (MergeIfComplete(tile.FaceId) || tiles.Count < slots.Count) flying = false;
-        else trayFull?.Invoke();
+        pendingArrivals.Remove(pending.tile);
+
+        if (pending.tile.Slot != null)
+        {
+            pending.tile.Slot.PlayBumpAnimation();
+        }
+        if (pending.onArrived != null)
+        {
+            pending.onArrived.Invoke();
+        }
+        if (!pending.fromClick)
+        {
+            return;
+        }
+
+        if (MergeIfComplete(pending.tile.FaceId))
+        {
+            return;
+        }
+
+        // Full tray, nothing else on its way and no merge: the player lost.
+        if (tiles.Count >= slots.Count && !IsFlying && trayFull != null)
+        {
+            trayFull.Invoke();
+        }
     }
 
     // Puts a tile next to its face mates and flies it into its slot.
-    private void Place(Tile tile, Action onArrived)
+    private void Place(Tile tile, Action onArrived, bool fromClick)
     {
-        tilePickedUp?.Invoke(tile);
+        if (tilePickedUp != null)
+        {
+            tilePickedUp.Invoke(tile);
+        }
         tile.PrepareForTray();
 
         int index = InsertIndex(tile.FaceId);
         tiles.Insert(index, tile);
-        Compact(index + 1);
 
-        arrangementManager.MoveTileToSlot(tile, slots[index], tilePose, () =>
-        {
-            if (tile.Slot != null) tile.Slot.PlayBumpAnimation();
-            onArrived?.Invoke();
-        });
+        PendingArrival pending = new PendingArrival();
+        pending.tile = tile;
+        pending.onArrived = onArrived;
+        pending.fromClick = fromClick;
+        pending.owner = this;
+        pendingArrivals[tile] = pending;
+
+        Compact(index + 1);
+        arrangementManager.MoveTileToSlot(tile, slots[index], tilePose, false, pending.Arrive);
     }
 
     // Right after the last tile of the same face, or at the end if there is none.
     private int InsertIndex(int faceId)
     {
-        int last = tiles.FindLastIndex(t => t.FaceId == faceId);
-        return last >= 0 ? last + 1 : tiles.Count;
+        for (int i = tiles.Count - 1; i >= 0; i--)
+        {
+            if (tiles[i].FaceId == faceId)
+            {
+                return i + 1;
+            }
+        }
+        return tiles.Count;
     }
 
-    // Slides every tile from this index on into its own slot.
+    // Slides every tile from this index on into its own slot. A tile still flying keeps its arrival and flies on.
     private void Compact(int start)
     {
         for (int i = start; i < tiles.Count; i++)
         {
-            if (tiles[i].Slot != slots[i]) arrangementManager.MoveTileToSlot(tiles[i], slots[i], tilePose, null);
+            Tile tile = tiles[i];
+            if (tile.Slot == slots[i])
+            {
+                continue;
+            }
+
+            PendingArrival pending;
+            bool stillFlying = pendingArrivals.TryGetValue(tile, out pending);
+
+            Action onArrived = null;
+            if (stillFlying)
+            {
+                onArrived = pending.Arrive;
+            }
+            arrangementManager.MoveTileToSlot(tile, slots[i], tilePose, stillFlying, onArrived);
         }
     }
 
@@ -133,22 +228,47 @@ public class TileTrayManager : Manager<TileTrayManager>
 
     #region Merging
 
-    // Merges the face if the tray holds a full set of it.
+    // Merges the face if the tray holds a full set of it that has arrived.
     public bool MergeIfComplete(int faceId)
     {
-        if (CountOf(faceId) < TileRules.SetSize) return false;
+        List<Tile> group = new List<Tile>();
+        foreach (Tile tile in tiles)
+        {
+            if (tile.FaceId == faceId && !pendingArrivals.ContainsKey(tile) && group.Count < TileRules.SetSize)
+            {
+                group.Add(tile);
+            }
+        }
+        if (group.Count < TileRules.SetSize)
+        {
+            return false;
+        }
 
-        List<Tile> group = tiles.FindAll(t => t.FaceId == faceId);
-        tiles.RemoveAll(t => t.FaceId == faceId);
+        foreach (Tile tile in group)
+        {
+            tiles.Remove(tile);
+        }
         Compact(0);
-        startMerge?.Invoke(group);
+
+        if (startMerge != null)
+        {
+            startMerge.Invoke(group);
+        }
         return true;
     }
 
-    // How many tiles of this face are in the tray right now.
+    // How many tiles of this face have arrived in the tray.
     public int CountOf(int faceId)
     {
-        return tiles.FindAll(t => t.FaceId == faceId).Count;
+        int count = 0;
+        foreach (Tile tile in tiles)
+        {
+            if (tile.FaceId == faceId && !pendingArrivals.ContainsKey(tile))
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     #endregion
@@ -158,16 +278,29 @@ public class TileTrayManager : Manager<TileTrayManager>
     // Booster path: pull in a tile from anywhere on the board. Call MergeIfComplete once they have all arrived.
     public void InsertFromBooster(Tile tile, Action onArrived)
     {
-        if (tile == null || tiles.Count >= slots.Count) onArrived?.Invoke();
-        else Place(tile, onArrived);
+        if (tile == null || tiles.Count >= slots.Count)
+        {
+            if (onArrived != null)
+            {
+                onArrived.Invoke();
+            }
+        }
+        else
+        {
+            Place(tile, onArrived, false);
+        }
     }
 
     // Undo path: takes the tile out and slides the ones after it to the left.
     public bool RemoveTile(Tile tile)
     {
         int index = tiles.IndexOf(tile);
-        if (index < 0) return false;
+        if (index < 0)
+        {
+            return false;
+        }
 
+        pendingArrivals.Remove(tile);
         tiles.RemoveAt(index);
         Compact(index);
         return true;
@@ -182,13 +315,16 @@ public class TileTrayManager : Manager<TileTrayManager>
     {
         foreach (Tile tile in tiles)
         {
-            if (tile == null) continue;
+            if (tile == null)
+            {
+                continue;
+            }
             tile.transform.DOKill();
             Destroy(tile.gameObject);
         }
 
         tiles.Clear();
-        flying = false;
+        pendingArrivals.Clear();
         externalLocks = 0;
     }
 
