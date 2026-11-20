@@ -1,14 +1,12 @@
-/*
- * TileBoardManager
- * ----------------
- * Keeps track of the tiles lying on the board and which of them are covered by another tile. Two tiles
- * overlap when their cells are closer than the overlap threshold, and the higher one covers the lower one.
- * "Higher" depends on the movable rule (the usual top-tiles rule, or its reverse) and on what counts as "on
- * top": the spawner's own stacking direction, a custom direction, or whichever tile is closer to a reference
- * object. It writes Covered and CoverCount on the tiles and dims or frees them. Picking a tile up frees the
- * tiles under it. Rebuild runs again after Shuffle, and ReturnTile is used by Undo. Boosters read Tiles, and
- * the game manager reads RemainingTiles to detect a win.
- */
+/*TileBoardManager
+----------------
+Keeps track of the tiles lying on the board and which of them are covered by another tile. Two tiles
+overlap when their cells are closer than the overlap threshold, and the higher one covers the lower one.
+It writes Covered and CoverCount on the tiles and blocks or frees them. Picking a tile up frees the tiles
+under it. Rebuild runs again after Shuffle, and ReturnTile is used by Undo. Boosters read Tiles, and the
+game manager reads RemainingTiles to detect a win.
+*/
+
 using System.Collections.Generic;
 using com.otm.manager;
 using UnityEngine;
@@ -131,6 +129,7 @@ public class TileBoardManager : Manager<TileBoardManager>
     private bool Covers(Tile upper, Tile lower, Vector3 axis)
     {
         float height = Score(upper, axis) - Score(lower, axis);
+        if (Mathf.Abs(height) <= minHeightDifference) height = upper.LayerIndex - lower.LayerIndex;
         if (movableRule == BoardMovableRule.BottomTilesMovable) height = -height;
 
         Vector2 delta = upper.CellPosition - lower.CellPosition;

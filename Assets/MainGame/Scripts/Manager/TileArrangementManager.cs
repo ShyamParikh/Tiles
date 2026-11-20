@@ -172,7 +172,7 @@ public class TileArrangementManager : Manager<TileArrangementManager>
 
         // Remember the finished tray size, then go back to the starting size so the tween can grow into it.
         Vector3 startScale = tile.transform.localScale;
-        tile.transform.localScale = Vector3.Scale(startScale, pose.scale);
+        tile.transform.localScale = Vector3.Scale(startScale, pose.ScaleFor(tile, slot));
         tile.RecordTrayScale();
         tile.transform.localScale = startScale;
 
