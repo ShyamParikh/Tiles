@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
   m_Name: Level 4
   m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
-  library: {fileID: 11400000, guid: 4e9a3e77f3b67384f964880d6623758b, type: 2}
+  library: {fileID: 11400000, guid: e9f16e3d1c9781f40a630ab2de502467, type: 2}
   overrideDefaultTileColor: 0
   defaultTileColor: {r: 1, g: 1, b: 1, a: 1}
   targetMaterialSlot: -1
@@ -126,11 +126,11 @@ MonoBehaviour:
   - tileCount: 9
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 1
+    overrideMaterial: 0
     tileMaterial: {fileID: 2100000, guid: d6c5679cf184043a7a5c6a40099eea4b, type: 2}
     trayOverrideColor: 0
     trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 1
+    trayOverrideMaterial: 0
     trayMaterial: {fileID: 2100000, guid: aacbdf0c0e5bd9b4fa2f8b6341d20131, type: 2}
     tileTypeId: Question
   - tileCount: 0

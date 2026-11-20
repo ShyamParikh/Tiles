@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
   m_Name: Level 5
   m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
-  library: {fileID: 11400000, guid: 4e9a3e77f3b67384f964880d6623758b, type: 2}
+  library: {fileID: 11400000, guid: e9f16e3d1c9781f40a630ab2de502467, type: 2}
   overrideDefaultTileColor: 0
   defaultTileColor: {r: 1, g: 1, b: 1, a: 1}
   targetMaterialSlot: -1
@@ -57,7 +57,7 @@ MonoBehaviour:
     trayMaterial: {fileID: 0}
     faceId: 33
     lockedTileTypeId: 
-  - tileCount: 3
+  - tileCount: 0
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
     overrideMaterial: 0
@@ -67,7 +67,7 @@ MonoBehaviour:
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
     faceId: 2
-    lockedTileTypeId: Merge
+    lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
@@ -134,6 +134,17 @@ MonoBehaviour:
     trayMaterial: {fileID: 0}
     faceId: 21
     lockedTileTypeId: 
+  - tileCount: 3
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: -1
+    lockedTileTypeId: Merge
   tilePoolEntries:
   - tileCount: 78
     overrideColor: 0
@@ -148,11 +159,11 @@ MonoBehaviour:
   - tileCount: 3
     overrideColor: 0
     tileColor: {r: 1, g: 1, b: 1, a: 1}
-    overrideMaterial: 1
+    overrideMaterial: 0
     tileMaterial: {fileID: 2100000, guid: 0ee16b057d71c4fd9bd379d82bba299c, type: 2}
     trayOverrideColor: 0
     trayColor: {r: 1, g: 1, b: 1, a: 1}
-    trayOverrideMaterial: 1
+    trayOverrideMaterial: 0
     trayMaterial: {fileID: 2100000, guid: 0ee16b057d71c4fd9bd379d82bba299c, type: 2}
     tileTypeId: Merge
   - tileCount: 0

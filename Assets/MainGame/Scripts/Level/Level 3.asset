@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a782aa4141d0b45da85d5bdfc68dec55, type: 3}
   m_Name: Level 3
   m_EditorClassIdentifier: Assembly-CSharp::TileLevelData
-  library: {fileID: 11400000, guid: 4e9a3e77f3b67384f964880d6623758b, type: 2}
+  library: {fileID: 11400000, guid: e9f16e3d1c9781f40a630ab2de502467, type: 2}
   overrideDefaultTileColor: 0
   defaultTileColor: {r: 1, g: 1, b: 1, a: 1}
   targetMaterialSlot: -1
@@ -33,7 +33,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 4
+    faceId: 18
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -44,7 +44,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 5
+    faceId: 19
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -55,7 +55,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 6
+    faceId: 20
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -66,7 +66,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 7
+    faceId: 21
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -77,7 +77,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 8
+    faceId: 64
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -88,7 +88,7 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 9
+    faceId: 65
     lockedTileTypeId: 
   - tileCount: 0
     overrideColor: 0
@@ -99,7 +99,29 @@ MonoBehaviour:
     trayColor: {r: 1, g: 1, b: 1, a: 1}
     trayOverrideMaterial: 0
     trayMaterial: {fileID: 0}
-    faceId: 10
+    faceId: 68
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 69
+    lockedTileTypeId: 
+  - tileCount: 0
+    overrideColor: 0
+    tileColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideMaterial: 0
+    tileMaterial: {fileID: 0}
+    trayOverrideColor: 0
+    trayColor: {r: 1, g: 1, b: 1, a: 1}
+    trayOverrideMaterial: 0
+    trayMaterial: {fileID: 0}
+    faceId: 70
     lockedTileTypeId: 
   tilePoolEntries:
   - tileCount: 0
